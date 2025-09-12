@@ -1,10 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>about</title>
-</head>
-<body>
-    <h1>About this project:</h1>
-    <p>This tool helps USask students plan their CS degree with the help of AI</p>
-</body>
-</html>
+
+<!-- This page inherits from the base.html -->
+{% extends "base.html" %}
+{% block title %}Home • USask AI Course Planner{% endblock %}
+<!-- Initializes the block content, which creates the body page until it encounters the 'endblock' -->
+{% block content %}
+<h1 Welcome to the USask AI Course Planner</h1>
+<p>This site will soon generate course summaries using GPT!</p>
+
+<!-- A form that sends a post request to flask and updated the url accordingly -->
+<form action="{{ url_for('main.summarize_course') }}" method="post">
+    <label>Course code (e.g., CMPT 270):</label>
+    <input name="course_code" required>
+    <button type="submit">Summarize</button>
+</form>
+
+{% if summary %}
+<h2>Summary</h2>
+<!-- Inserts the value inputted to summary and removes unnecessary whitespaces and line breaks -->
+<pre>{{ summary }}</pre>
+{% endif %}
+<!-- Closes the content page, until reopened -->
+{% endblock %}
