@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+<!-- Setting a title through the 'block' command -->
+{% block title %}About • USask AI Course Planner{% endblock %}
+
+<!-- Setting up the 'about' content page-->
+{% block content %}
+<h1>About</h1>
+<p>This tool will summarize USask CS courses and help plan electives using AI.</p>
+{% endblock %}
+
