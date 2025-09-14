@@ -1,4 +1,5 @@
 
+
 <!-- This page inherits from the base.html -->
 {% extends "base.html" %}
 {% block title %}Home • USask AI Course Planner{% endblock %}
@@ -10,7 +11,8 @@
 <!-- A form that sends a post request to flask and updated the url accordingly -->
 <form action="{{ url_for('main.summarize_course') }}" method="post">
     <label>Course code (e.g., CMPT 270):</label>
-    <input name="course_code" required>
+    <!-- Set the users character length to 20 -->
+    <input name="course_code" maxlength="20" required>
     <button type="submit">Summarize</button>
 </form>
 
@@ -21,3 +23,4 @@
 {% endif %}
 <!-- Closes the content page, until reopened -->
 {% endblock %}
+
