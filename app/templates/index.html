@@ -3,23 +3,30 @@
 <!-- This page inherits from the base.html -->
 {% extends "base.html" %}
 {% block title %}Home • USask AI Course Planner{% endblock %}
-<!-- Initializes the block content, which creates the body page until it encounters the 'endblock' -->
+
+<!-- Initializes the block content, which creates the body page until it encounters the 'endblock' mark -->
 {% block content %}
 <h1 Welcome to the USask AI Course Planner</h1>
 <p>This site will soon generate course summaries using GPT!</p>
 
-<!-- A form that sends a post request to flask and updated the url accordingly -->
+<!-- A form that sends a post request to flask and updates the url accordingly -->
 <form action="{{ url_for('main.summarize_course') }}" method="post">
     <label>Course code (e.g., CMPT 270):</label>
-    <!-- Set the users character length to 20 -->
-    <input name="course_code" maxlength="20" required>
+    <!-- Set the users character length to 20,  -->
+    <input id="course_code" name="course_code" maxlength="20" required placeholder="CMPT 270" autocomplete="off">
     <button type="submit">Summarize</button>
 </form>
 
 {% if summary %}
-<h2>Summary</h2>
-<!-- Inserts the value inputted to summary and removes unnecessary whitespaces and line breaks -->
-<pre>{{ summary }}</pre>
+<!-- Using the div tag to link with the CSS class -->
+<div class="summary-container">
+    <h2>Summary</h2>
+
+<!-- Inserts the value inputted to the summary variable and removes unnecessary whitespaces and line breaks
+ while assigning output value to the reusable class tag -->
+<pre class="output"> {{ summary }}</pre>
+</div>
+
 {% endif %}
 <!-- Closes the content page, until reopened -->
 {% endblock %}

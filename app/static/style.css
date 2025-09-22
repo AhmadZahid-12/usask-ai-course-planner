@@ -1,2 +1,17 @@
 body { font-family: system-ui, sans-serif; margin: 2rem; }
 h1 { font-size: 2rem; }
+
+.summary-container {
+    margin: 20px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #cccccc;
+}
+
+.output {
+    font-family: monospace;
+    white-space: pre-wrap;
+    padding: 10px;
+    background-color: #eeeeee;
+    border-left: 3px solid #007bdd;
+}
