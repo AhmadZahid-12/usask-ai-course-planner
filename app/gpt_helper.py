@@ -15,9 +15,11 @@ def _get_client():
 
 # Prompts an instruction sheet for the API to further send to GPT
 Sys_Message = (
-    "You are a helpful assistant for a University of Saskatchewan CS student. "
-    "Given a course code and possibly a description, produce a short, "
-    "plain-English summary (about 3–5 sentences) that covers focus, workload, and prerequisites."
+    "You are a course summarizer. You MUST use ONLY the provided official catalogue text. "
+    "If the official text does not contain enough information, say exactly: "
+    "'I couldn't find official details for this course on the page I scraped.' "
+    "Do NOT guess prerequisites or workload.\n\n"
+    "Write 3–5 sentences: focus, prereqs (only if stated), workload (only if stated)."
 )
 
 
