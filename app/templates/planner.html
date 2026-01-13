@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Degree Planner (MVP)</h1>
+
+<p>Select degree template and mark completed courses. The planner will show what you can take next.</p>
+
+<div style="margin: 12px 0;">
+  <button id="loadDegreeBtn">Load BSc CS Template</button>
+</div>
+
+<div style="display:flex; gap:40px; align-items:flex-start; margin-top: 16px;">
+  <div style="flex:1;">
+    <h2>Required Courses</h2>
+    <div id="requiredList"></div>
+  </div>
+
+  <div style="flex:1;">
+    <h2>Unlocked Next Courses</h2>
+    <div id="unlockedList"></div>
+  </div>
+</div>
+
+<script>
+async function fetchJSON(url, opts={}) {
+  const r = await fetch(url, opts);
+  return await r.json();
+}
+
+function checkboxRow(code) {
+  const id = `c_${code.replace(" ", "_")}`;
+  return `
+    <div style="margin:6px 0;">
+      <label>
+        <input type="checkbox" id="${id}" data-code="${code}">
+        ${code}
+      </label>
+    </div>
+  `;
+}
+
+function getCompleted() {
+  const boxes = document.querySelectorAll("input[type=checkbox][data-code]");
+  const completed = [];
+  boxes.forEach(b => {
+    if (b.checked) completed.push(b.dataset.code);
+  });
+  return completed;
+}
+
+async function refreshUnlocked() {
+  const completed = getCompleted();
+  const data = await fetchJSON("/api/planner/unlocked", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ completed })
+  });
+
+  const div = document.getElementById("unlockedList");
+  if (!data.unlocked || data.unlocked.length === 0) {
+    div.innerHTML = "<p>No unlocked courses yet (or scrape more courses first).</p>";
+    return;
+  }
+  div.innerHTML = "<ul>" + data.unlocked.map(c => `<li>${c}</li>`).join("") + "</ul>";
+}
+
+document.getElementById("loadDegreeBtn").addEventListener("click", async () => {
+  const degree = await fetchJSON("/api/degree/bsci_cs");
+
+  const req = degree.required_courses || [];
+  const list = document.getElementById("requiredList");
+  list.innerHTML = req.map(checkboxRow).join("");
+
+  // attach change listeners
+  document.querySelectorAll("input[type=checkbox][data-code]").forEach(b => {
+    b.addEventListener("change", refreshUnlocked);
+  });
+
+  // initial
+  refreshUnlocked();
+});
+</script>
+
+{% endblock %}

@@ -29,6 +29,15 @@ The app:
 ---
 
 ## 📦 Installation
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# set your key (either in .env or export it)
+export OPENAI_API_KEY="..."
+
+flask --app main run
+# open http://127.0.0.1:5000
 
 ### 1. Clone the repository
 ```bash

@@ -1,0 +1,14 @@
+{
+    "degree_name": "BSc Computer Science (MVP Template)",
+    "required_courses": [
+      "CMPT 141",
+      "CMPT 145",
+      "CMPT 214",
+      "CMPT 270",
+      "CMPT 280"
+    ],
+    "notes": [
+      "This is a starter template. Expand with real USask requirements later.",
+      "You can add electives, categories, and credit totals in later versions."
+    ]
+  }

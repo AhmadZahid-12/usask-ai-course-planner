@@ -64,62 +64,43 @@ def course_url(course_code: str) -> str:
 # Extraction
 
 def extract_description(html: str) -> str:
-    """
-    Extract course description from USask catalogue HTML.
-    
-    The catalogue pages have a structure like:
-    <div id="Description">
-        <p>Main description paragraph...</p>
-        <p><strong>Prerequisite(s):</strong> ...</p>
-        <p><strong>Note:</strong> ...</p>
-    </div>
-    """
+    """Extract course description from USask catalogue HTML."""
     soup = BeautifulSoup(html, "html.parser")
-    
+
     # Find the Description section by ID
     desc_section = soup.find(id="Description")
-    
     if not desc_section:
         return ""
-    
+
     # Extract all paragraphs in the Description section
     paragraphs = desc_section.find_all("p")
-    
     if not paragraphs:
         return ""
-    
-    # Combine all paragraph text
+
     parts = []
     for p in paragraphs:
         text = p.get_text(" ", strip=True)
         if text:
             parts.append(text)
-    
+
     return " ".join(parts).strip()
 
 
 # Main scraping function
 
-
 def scrape_course_page(course_code: str) -> Dict[str, Any]:
-    """
-    Scrape a single course page from USask catalogue.
-    
-    Returns dict with:
-        - course_code: normalized code
-        - source_url: URL scraped
-        - raw_text: extracted description text
-        - not_found: True if 404 or no description found
-    """
+    """Scrape a single course page from USask catalogue."""
     url = course_url(course_code)
-    
+
     try:
         r = requests.get(
             url,
             timeout=TIMEOUT,
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            },
         )
-        
+
         if r.status_code == 404:
             return {
                 "course_code": normalize_course_code(course_code),
@@ -127,11 +108,10 @@ def scrape_course_page(course_code: str) -> Dict[str, Any]:
                 "raw_text": "",
                 "not_found": True,
             }
-        
+
         r.raise_for_status()
-        
+
     except requests.RequestException as e:
-        # Network error, timeout, etc.
         return {
             "course_code": normalize_course_code(course_code),
             "source_url": url,
@@ -139,42 +119,29 @@ def scrape_course_page(course_code: str) -> Dict[str, Any]:
             "not_found": True,
             "error": str(e),
         }
-    
-    # Extract description from HTML
+
     desc = extract_description(r.text)
-    
+
     return {
         "course_code": normalize_course_code(course_code),
         "source_url": url,
-        "raw_text": desc[:6000],  # Limit to 6000 chars to avoid token issues
+        "raw_text": desc[:6000],
         "not_found": not bool(desc),
     }
 
 
 def get_course_raw_info(course_code: str) -> Dict[str, Any]:
-    """
-    Get course info with caching.
-    
-    Returns dict with:
-        - course_code: normalized code
-        - source_url: URL scraped
-        - raw_text: extracted description
-        - not_found: True if not found
-        - from_cache: True if served from cache
-    """
+    """Get course info with caching."""
     course_code = normalize_course_code(course_code)
-    
-    # Try cache first
+
     cached = _read_cache(course_code)
     if cached:
         cached["from_cache"] = True
+        # Ensure key exists for callers
+        cached.setdefault("not_found", not bool((cached.get("raw_text") or "").strip()))
         return cached
-    
-    # Scrape fresh
+
     payload = scrape_course_page(course_code)
     payload["from_cache"] = False
-    
-    # Cache the result
     _write_cache(course_code, payload)
-    
     return payload
