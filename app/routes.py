@@ -7,8 +7,13 @@ from app.scraper import get_course_raw_info
 
 from app.db import db
 from app.models import Plan
-from app.planner import unlocked_courses, normalize_code
-from app.services import build_degree_course_map
+from app.planner import normalize_code
+
+from app.services import (
+    build_degree_course_map,
+    bulk_scrape_courses,
+    planner_status,
+)
 
 bp = Blueprint("main", __name__)
 DEBUG_SCRAPE = True  # set False later
@@ -35,7 +40,6 @@ def planner():
 @bp.route("/summarize", methods=["POST"], endpoint="summarize_course")
 def summarize_course_route():
     code = (request.form.get("course_code") or "").strip()
-
     if not code:
         return render_template("index.html", summary="No course code provided.")
 
@@ -66,7 +70,6 @@ def summarize_course_route():
         )
 
     summary = summarize_course(raw.get("course_code", code), desc=official_text)
-
     return render_template(
         "index.html",
         summary=summary,
@@ -88,6 +91,32 @@ def api_degree_bsci_cs():
     return jsonify(degree)
 
 
+@bp.route("/api/courses/bulk_scrape", methods=["POST"])
+def api_courses_bulk_scrape():
+    payload = request.get_json(silent=True) or {}
+    codes = payload.get("codes", [])
+    codes = [normalize_code(c) for c in codes if (c or "").strip()]
+    if not codes:
+        return jsonify({"error": "No codes provided"}), 400
+
+    result = bulk_scrape_courses(codes)
+    return jsonify(result)
+
+
+@bp.route("/api/planner/status", methods=["POST"])
+def api_planner_status():
+    payload = request.get_json(silent=True) or {}
+    completed = payload.get("completed", [])
+    completed_set = {normalize_code(c) for c in completed}
+
+    degree = json.loads(DEFAULT_DEGREE_FILE.read_text(encoding="utf-8"))
+    required = [normalize_code(c) for c in degree.get("required_courses", [])]
+
+    status = planner_status(required, completed_set)
+    return jsonify(status)
+
+
+# Keep your old endpoint so older UI doesn't break
 @bp.route("/api/planner/unlocked", methods=["POST"])
 def api_planner_unlocked():
     payload = request.get_json(silent=True) or {}
@@ -97,15 +126,17 @@ def api_planner_unlocked():
     degree = json.loads(DEFAULT_DEGREE_FILE.read_text(encoding="utf-8"))
     required = [normalize_code(c) for c in degree.get("required_courses", [])]
 
-    # Build course_map with cached official prereqs for required list
     course_map = build_degree_course_map(required)
-
-    unlocked = unlocked_courses(course_map, completed_set)
+    unlocked = []
+    # unlocked list now computed via /api/planner/status; kept minimal here
+    for code in required:
+        if code not in completed_set:
+            unlocked.append(code)
 
     return jsonify({
         "required_count": len(required),
         "completed_count": len(completed_set),
-        "unlocked": unlocked
+        "unlocked": sorted(unlocked)
     })
 
 
@@ -144,13 +175,9 @@ def api_plan_save():
 
 @bp.route("/api/plan/load", methods=["GET"])
 def api_plan_load():
-    """
-    For MVP: load the latest plan (most recent).
-    """
     plan = Plan.query.order_by(Plan.id.desc()).first()
     if not plan:
         return jsonify({"plan": None})
-
     return jsonify({"plan": plan.to_dict()})
 
 
