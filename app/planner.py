@@ -1,8 +1,8 @@
+# app/planner.py
 import re
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple, Any
 
-# Matches: CMPT 214, CMPT214, CMPT 145.3, CMPT 145A
-COURSE_RE = re.compile(r"\b([A-Z]{2,5})\s*([0-9]{2,4})(?:\.[0-9])?\s*([A-Z]?)\b")
+COURSE_RE = re.compile(r"\b([A-Z]{2,5})\s*([0-9]{2,4}[A-Z]?)\b")
 
 
 def normalize_code(code: str) -> str:
@@ -40,7 +40,7 @@ def parse_prereqs(raw_text: str) -> List[List[str]]:
         ["CMPT 145", "MATH 110"],   # group 1 (AND)
         ["CMPT 115"]               # group 2 (AND)
       ]
-    Means: (CMPT145 AND MATH110) OR (CMPT115)
+    Meaning: (CMPT145 AND MATH110) OR (CMPT115)
     """
     line = extract_prereq_line(raw_text)
     if not line:
@@ -71,7 +71,7 @@ def parse_prereqs(raw_text: str) -> List[List[str]]:
             continue
 
         found = COURSE_RE.findall(part.upper())
-        codes = [normalize_code(f"{subj} {num}{letter}") for subj, num, letter in found]
+        codes = [normalize_code(f"{subj} {num}") for subj, num in found]
         if codes:
             current.extend(codes)
 
@@ -89,12 +89,57 @@ def prereqs_satisfied(prereq_groups: List[List[str]], completed: Set[str]) -> bo
         group_norm = [normalize_code(c) for c in group]
         if all(c in completed_norm for c in group_norm):
             return True
-
     return False
 
 
-def unlocked_courses(course_map: Dict[str, Dict], completed: Set[str]) -> List[str]:
+def unlocked_courses(course_map: Dict[str, Dict[str, Any]], completed: Set[str]) -> List[str]:
     unlocked = []
+    completed_norm = {normalize_code(c) for c in completed}
+
+    for code, data in course_map.items():
+        code_norm = normalize_code(code)
+        if code_norm in completed_norm:
+            continue
+        prereq_groups = data.get("prereqs", [])
+        if prereqs_satisfied(prereq_groups, completed_norm):
+            unlocked.append(code_norm)
+
+    return sorted(unlocked)
+
+
+def missing_prereqs(prereq_groups: List[List[str]], completed: Set[str]) -> List[str]:
+    """
+    If prereqs satisfied -> []
+    If not satisfied -> return the 'closest' option (smallest missing set) for a helpful explanation.
+    """
+    if not prereq_groups:
+        return []
+
+    completed_norm = {normalize_code(c) for c in completed}
+
+    # if any satisfied, no missing
+    for group in prereq_groups:
+        group_norm = [normalize_code(c) for c in group]
+        if all(c in completed_norm for c in group_norm):
+            return []
+
+    # otherwise, pick the group with the fewest missing courses
+    best_missing: List[str] | None = None
+    for group in prereq_groups:
+        group_norm = [normalize_code(c) for c in group]
+        missing = [c for c in group_norm if c not in completed_norm]
+        if best_missing is None or len(missing) < len(best_missing):
+            best_missing = missing
+
+    return sorted(best_missing or [])
+
+
+def locked_courses_with_reasons(course_map: Dict[str, Dict[str, Any]], completed: Set[str]) -> List[Dict[str, Any]]:
+    """
+    Returns:
+      [{"course": "CMPT 332", "missing": ["CMPT 214"]}, ...]
+    """
+    locked: List[Dict[str, Any]] = []
     completed_norm = {normalize_code(c) for c in completed}
 
     for code, data in course_map.items():
@@ -104,6 +149,9 @@ def unlocked_courses(course_map: Dict[str, Dict], completed: Set[str]) -> List[s
 
         prereq_groups = data.get("prereqs", [])
         if prereqs_satisfied(prereq_groups, completed_norm):
-            unlocked.append(code_norm)
+            continue
 
-    return sorted(unlocked)
+        missing = missing_prereqs(prereq_groups, completed_norm)
+        locked.append({"course": code_norm, "missing": missing})
+
+    return sorted(locked, key=lambda x: x["course"])

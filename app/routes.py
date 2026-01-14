@@ -7,7 +7,7 @@ from app.scraper import get_course_raw_info
 
 from app.db import db
 from app.models import Plan
-from app.planner import normalize_code
+from app.planner import unlocked_courses, locked_courses_with_reasons, normalize_code
 
 from app.services import (
     build_degree_course_map,
@@ -116,9 +116,21 @@ def api_planner_status():
     return jsonify(status)
 
 
-# Keep your old endpoint so older UI doesn't break
-@bp.route("/api/planner/unlocked", methods=["POST"])
+# Keep the old endpoint so older clients/UI don't break.
+# Also allow GET to return a helpful message (curl mistakes) rather than a confusing 405.
+@bp.route("/api/planner/unlocked", methods=["POST", "GET"])
 def api_planner_unlocked():
+    if request.method == "GET":
+        return (
+            jsonify(
+                {
+                    "error": "Use POST with JSON body",
+                    "example": {"completed": ["CMPT 141", "CMPT 145"]},
+                }
+            ),
+            405,
+        )
+
     payload = request.get_json(silent=True) or {}
     completed = payload.get("completed", [])
     completed_set = {normalize_code(c) for c in completed}
@@ -127,17 +139,18 @@ def api_planner_unlocked():
     required = [normalize_code(c) for c in degree.get("required_courses", [])]
 
     course_map = build_degree_course_map(required)
-    unlocked = []
-    # unlocked list now computed via /api/planner/status; kept minimal here
-    for code in required:
-        if code not in completed_set:
-            unlocked.append(code)
 
-    return jsonify({
-        "required_count": len(required),
-        "completed_count": len(completed_set),
-        "unlocked": sorted(unlocked)
-    })
+    unlocked = unlocked_courses(course_map, completed_set)
+    locked = locked_courses_with_reasons(course_map, completed_set)
+
+    return jsonify(
+        {
+            "required_count": len(required),
+            "completed_count": len(completed_set),
+            "unlocked": unlocked,
+            "locked": locked,
+        }
+    )
 
 
 # ---------------------------
@@ -187,11 +200,13 @@ def api_plan_export():
     if not plan:
         return jsonify({"error": "No plan found"}), 404
 
-    return jsonify({
-        "name": plan.name,
-        "completed": json.loads(plan.completed_json or "[]"),
-        "notes": plan.notes
-    })
+    return jsonify(
+        {
+            "name": plan.name,
+            "completed": json.loads(plan.completed_json or "[]"),
+            "notes": plan.notes,
+        }
+    )
 
 
 @bp.route("/api/plan/import", methods=["POST"])
@@ -206,7 +221,7 @@ def api_plan_import():
     plan = Plan(
         name=name,
         completed_json=json.dumps(completed_norm),
-        notes=notes
+        notes=notes,
     )
     db.session.add(plan)
     db.session.commit()

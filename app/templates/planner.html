@@ -47,6 +47,15 @@
 <script>
 let DEGREE_REQUIRED = [];
 
+function setButtonsEnabled(enabled) {
+  ["savePlanBtn","loadPlanBtn","exportBtn","importBtn"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !enabled;
+  });
+}
+
+setButtonsEnabled(false);
+
 async function fetchJSON(url, opts={}) {
   const r = await fetch(url, opts);
   if (!r.ok) {
@@ -107,17 +116,21 @@ async function refreshStatus() {
     lockedDiv.innerHTML = "<p>Nothing locked (or you completed everything).</p>";
   } else {
     lockedDiv.innerHTML = status.locked.map(item => {
-      const miss = (item.missing_prereqs || []);
-      const why = miss.length ? `Missing: <b>${miss.join(", ")}</b>` : "Missing prerequisites";
-      return `<div style="margin:8px 0; padding:8px; border:1px solid #ddd;">
+      const miss = (item.missing_prereqs || item.missing || []);
+      const why = miss.length ? `Missing: <b>${miss.join(", ")}</b>` : (item.reason || "Missing prerequisites");
+      const prereqText = item.prereq_text ? `<div style="color:#666; margin-top:4px;"><i>Prereqs:</i> ${item.prereq_text}</div>` : "";
+      return `<div style="margin:8px 0; padding:8px; border:1px solid #ddd; border-radius:6px;">
         <div><b>${item.code}</b></div>
         <div style="color:#444; margin-top:4px;">${why}</div>
+        ${prereqText}
       </div>`;
     }).join("");
   }
 
+  const reqCount = (typeof status.required_count === "number") ? status.required_count : (DEGREE_REQUIRED || []).length;
+  const compCount = (typeof status.completed_count === "number") ? status.completed_count : (completed || []).length;
   document.getElementById("statusLine").textContent =
-    `Required: ${status.required_count} | Completed: ${status.completed_count} | Unlocked: ${(status.unlocked||[]).length} | Locked: ${(status.locked||[]).length}`;
+    `Required: ${reqCount} | Completed: ${compCount} | Unlocked: ${(status.unlocked||[]).length} | Locked: ${(status.locked||[]).length}`;
 }
 
 async function loadDegreeTemplate() {
@@ -127,6 +140,7 @@ async function loadDegreeTemplate() {
   // render checkboxes
   const list = document.getElementById("requiredList");
   list.innerHTML = DEGREE_REQUIRED.map(checkboxRow).join("");
+  setButtonsEnabled(true);
 
   // attach listeners
   document.querySelectorAll("input[type=checkbox][data-code]").forEach(b => {
