@@ -1,27 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>Degree Planner (MVP)</h1>
+<h1>Degree Planner (Phase 2)</h1>
 
-<p>Select degree template and mark completed courses. The planner will show what you can take next.</p>
+<p>
+  Load your degree template, mark completed courses, then
+  <b>Save</b> your plan to the database (SQLite).
+</p>
 
-<div style="margin: 12px 0;">
+<div style="margin: 12px 0; display:flex; gap:10px; flex-wrap:wrap;">
   <button id="loadDegreeBtn">Load BSc CS Template</button>
+  <button id="loadPlanBtn">Load Latest Saved Plan</button>
+  <button id="savePlanBtn">Save Plan</button>
+  <button id="exportBtn">Export JSON</button>
+  <button id="importBtn">Import JSON</button>
 </div>
 
-<div style="display:flex; gap:40px; align-items:flex-start; margin-top: 16px;">
-  <div style="flex:1;">
+<div style="margin: 10px 0;">
+  <label>Plan name:</label>
+  <input id="planName" type="text" value="My Plan" style="padding:6px; width: 260px;">
+</div>
+
+<div style="margin: 10px 0;">
+  <label>Notes:</label><br>
+  <textarea id="planNotes" rows="4" style="width: 100%; max-width: 800px; padding:8px;"></textarea>
+</div>
+
+<hr>
+
+<div style="display:flex; gap:40px; align-items:flex-start; margin-top: 16px; flex-wrap:wrap;">
+  <div style="flex:1; min-width: 280px;">
     <h2>Required Courses</h2>
     <div id="requiredList"></div>
   </div>
 
-  <div style="flex:1;">
+  <div style="flex:1; min-width: 280px;">
     <h2>Unlocked Next Courses</h2>
     <div id="unlockedList"></div>
   </div>
 </div>
 
 <script>
+let currentPlanId = null;
+
 async function fetchJSON(url, opts={}) {
   const r = await fetch(url, opts);
   return await r.json();
@@ -48,6 +69,13 @@ function getCompleted() {
   return completed;
 }
 
+function setCompleted(completedList) {
+  const completedSet = new Set((completedList || []).map(x => x.toUpperCase()));
+  document.querySelectorAll("input[type=checkbox][data-code]").forEach(b => {
+    b.checked = completedSet.has(b.dataset.code.toUpperCase());
+  });
+}
+
 async function refreshUnlocked() {
   const completed = getCompleted();
   const data = await fetchJSON("/api/planner/unlocked", {
@@ -58,27 +86,124 @@ async function refreshUnlocked() {
 
   const div = document.getElementById("unlockedList");
   if (!data.unlocked || data.unlocked.length === 0) {
-    div.innerHTML = "<p>No unlocked courses yet (or scrape more courses first).</p>";
+    div.innerHTML = "<p>No unlocked courses yet (or degree template is small).</p>";
     return;
   }
   div.innerHTML = "<ul>" + data.unlocked.map(c => `<li>${c}</li>`).join("") + "</ul>";
 }
 
-document.getElementById("loadDegreeBtn").addEventListener("click", async () => {
+async function loadDegree() {
   const degree = await fetchJSON("/api/degree/bsci_cs");
 
   const req = degree.required_courses || [];
   const list = document.getElementById("requiredList");
   list.innerHTML = req.map(checkboxRow).join("");
 
-  // attach change listeners
   document.querySelectorAll("input[type=checkbox][data-code]").forEach(b => {
     b.addEventListener("change", refreshUnlocked);
   });
 
-  // initial
   refreshUnlocked();
-});
+}
+
+async function savePlan() {
+  const completed = getCompleted();
+  const name = document.getElementById("planName").value || "My Plan";
+  const notes = document.getElementById("planNotes").value || "";
+
+  const res = await fetchJSON("/api/plan/save", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      id: currentPlanId,
+      name,
+      completed,
+      notes
+    })
+  });
+
+  if (res.ok && res.plan) {
+    currentPlanId = res.plan.id;
+    alert("✅ Plan saved!");
+  } else {
+    alert("❌ Could not save plan");
+  }
+}
+
+async function loadLatestPlan() {
+  const res = await fetchJSON("/api/plan/load");
+  if (!res.plan) {
+    alert("No saved plan found yet.");
+    return;
+  }
+
+  currentPlanId = res.plan.id;
+  document.getElementById("planName").value = res.plan.name || "My Plan";
+  document.getElementById("planNotes").value = res.plan.notes || "";
+
+  const completed = JSON.parse(res.plan.completed_json || "[]");
+  setCompleted(completed);
+  refreshUnlocked();
+  alert("✅ Loaded latest plan");
+}
+
+async function exportPlan() {
+  const data = await fetchJSON("/api/plan/export");
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "degree-plan.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importPlan() {
+  const raw = prompt("Paste plan JSON here:");
+  if (!raw) return;
+
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    alert("Invalid JSON");
+    return;
+  }
+
+  const res = await fetchJSON("/api/plan/import", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(data)
+  });
+
+  if (res.ok && res.plan) {
+    currentPlanId = res.plan.id;
+    document.getElementById("planName").value = res.plan.name || "Imported Plan";
+    document.getElementById("planNotes").value = res.plan.notes || "";
+    setCompleted(JSON.parse(res.plan.completed_json || "[]"));
+    refreshUnlocked();
+    alert("✅ Imported + saved plan");
+  } else {
+    alert("❌ Could not import");
+  }
+}
+
+document.getElementById("loadDegreeBtn").addEventListener("click", loadDegree);
+document.getElementById("savePlanBtn").addEventListener("click", savePlan);
+document.getElementById("loadPlanBtn").addEventListener("click", loadLatestPlan);
+document.getElementById("exportBtn").addEventListener("click", exportPlan);
+document.getElementById("importBtn").addEventListener("click", importPlan);
+
+// auto-load degree on page open:
+loadDegree();
 </script>
 
 {% endblock %}
