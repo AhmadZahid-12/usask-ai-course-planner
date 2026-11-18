@@ -72,7 +72,8 @@ async function refreshStatus() {
 
 function displayStatus(row, state) {
   paintBadge(row.querySelector('.badge'), state);
-  row.querySelector('.plan-status small').textContent = state.detail || '';
+  const reason = state.detail?.replace(/^Manual verification needed:\s*/i, '') || '';
+  row.querySelector('.plan-status small').textContent = reason.charAt(0).toUpperCase() + reason.slice(1);
 }
 
 function progressChanged() {
@@ -150,45 +151,101 @@ el('export-plan').addEventListener('click', () => doPlanAction(async () => {
   setTimeout(() => URL.revokeObjectURL(href), 1000);
   notify('Exported your latest saved progress.');
 }));
+const importForm = el('import-form');
+const importText = el('plan-json');
+const importFile = el('plan-file');
+const importErrorMessage = el('import-error');
+const importSubmit = el('submit-import');
+const maxImportSize = 256 * 1024;
+let fileRead = 0;
+let importing = false;
+
+function clearImportError() {
+  importErrorMessage.hidden = true;
+  importText.removeAttribute('aria-invalid');
+  importFile.removeAttribute('aria-invalid');
+}
+
+function importError(message, field) {
+  importErrorMessage.textContent = message;
+  importErrorMessage.hidden = false;
+  if (field) {
+    field.setAttribute('aria-invalid', 'true');
+    field.focus();
+  }
+}
+
 el('import-plan').addEventListener('click', () => {
-  el('import-form').reset();
-  el('import-error').hidden = true;
+  importForm.reset();
+  el('plan-file-name').textContent = 'JSON · up to 256 KB';
+  clearImportError();
   importDialog.showModal();
 });
-function importError(message) {
-  el('import-error').hidden = false;
-  el('import-error').textContent = message;
-}
-el('plan-file').addEventListener('change', async event => {
-  const file = event.target.files[0];
-  if (!file) return;
-  if (file.size > 262144) return importError('Choose a JSON file smaller than 256 KB.');
-  try {
-    el('plan-json').value = await file.text();
-    el('import-error').hidden = true;
-  } catch { importError('That file could not be read.'); }
+el('cancel-import').addEventListener('click', () => importDialog.close());
+importDialog.addEventListener('cancel', event => {
+  if (importing) event.preventDefault();
 });
-el('import-form').addEventListener('submit', async event => {
+importDialog.addEventListener('close', () => {
+  fileRead++;
+  if (!importing) importSubmit.disabled = false;
+});
+importFile.addEventListener('change', async () => {
+  const file = importFile.files[0];
+  if (!file) return;
+  const reading = ++fileRead;
+  clearImportError();
+  if (file.size > maxImportSize) {
+    importSubmit.disabled = false;
+    importFile.value = '';
+    el('plan-file-name').textContent = 'JSON · up to 256 KB';
+    return importError('Choose a JSON file no larger than 256 KB.', importFile);
+  }
+  importSubmit.disabled = true;
+  el('plan-file-name').textContent = `Reading ${file.name}…`;
+  try {
+    const contents = await file.text();
+    if (reading !== fileRead) return;
+    importText.value = contents;
+    el('plan-file-name').textContent = file.name;
+  } catch {
+    if (reading !== fileRead) return;
+    el('plan-file-name').textContent = 'JSON · up to 256 KB';
+    importError('That file could not be read. Try another file or paste the JSON.', importFile);
+  } finally {
+    if (reading === fileRead) importSubmit.disabled = false;
+  }
+});
+importText.addEventListener('input', clearImportError);
+importForm.addEventListener('submit', async event => {
   event.preventDefault();
-  const submit = event.submitter;
-  if (submit.disabled) return;
+  if (importSubmit.disabled) return;
+  const value = importText.value.trim();
+  if (!value) return importError('Choose a plan file or paste the exported JSON.', importText);
+  if (new Blob([value]).size > maxImportSize) return importError('Keep the imported JSON under 256 KB.', importText);
   let data;
   try {
-    const value = el('plan-json').value;
-    if (value.length > 262144) throw new Error();
     data = JSON.parse(value);
     if (!data || Array.isArray(data) || typeof data !== 'object') throw new Error();
-  } catch { return importError('Enter a valid plan JSON object under 256 KB.'); }
-  submit.disabled = true;
+  } catch { return importError('Enter a valid plan JSON object.', importText); }
+
+  importing = true;
+  const dismiss = importDialog.querySelectorAll('#cancel-import, button[aria-label="Close import"]');
+  dismiss.forEach(button => { button.disabled = true; });
+  importSubmit.disabled = true;
+  importSubmit.textContent = 'Importing…';
   try {
     const {plan} = await api('/api/plan/import', data);
-    importDialog.close();
     populate(plan);
+    importDialog.close();
     notify(`Imported ${plan.name}.`);
   } catch (error) { importError(error.message); }
-  finally { submit.disabled = false; }
+  finally {
+    importing = false;
+    dismiss.forEach(button => { button.disabled = false; });
+    importSubmit.disabled = false;
+    importSubmit.textContent = 'Import and load';
+  }
 });
-el('import-form').addEventListener('input', () => { el('import-error').hidden = true; });
 
 const invalidateSequence = mountTerms({courseCode, confirmChange, getCompleted: () => [...completed]});
 doPlanAction(loadPlan);

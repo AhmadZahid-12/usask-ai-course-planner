@@ -55,7 +55,8 @@ document.addEventListener('keydown', event => {
   if (event.key !== '/' || event.altKey || event.ctrlKey || event.metaKey ||
       event.target.closest('input, textarea, select, [contenteditable]') || document.querySelector('dialog[open]')) return;
   event.preventDefault();
-  if (document.querySelector('#course-search')) document.querySelector('#course-search').focus();
+  const search = document.querySelector('#course-search');
+  if (search?.getClientRects().length) search.focus();
   else location.assign(document.querySelector('.header-search').href);
 });
 

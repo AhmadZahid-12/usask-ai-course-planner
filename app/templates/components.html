@@ -9,6 +9,8 @@
 {% elif name == 'sun' %}<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M19 5l-1.5 1.5m-11 11L5 19"/>
 {% elif name == 'moon' %}<path d="M20.8 14A9 9 0 0 1 10 3.2 9 9 0 1 0 20.8 14Z"/>
 {% elif name == 'arrow' %}<path d="M4 12h15m-6-6 6 6-6 6"/>
+{% elif name == 'back' %}<path d="M20 12H5m6 6-6-6 6-6"/>
+{% elif name == 'upload' %}<path d="M12 15V4m-4 4 4-4 4 4M5 15v4h14v-4"/>
 {% elif name == 'external' %}<path d="M13 5h6v6m0-6-8 8m7 1v5H5V6h5"/>
 {% elif name == 'check' %}<path d="m5 12 4 4L19 6"/>
 {% elif name == 'lock' %}<rect x="5.5" y="10" width="13" height="10" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/>
@@ -25,9 +27,16 @@
 {% endmacro %}
 
 {% macro metric(id, label, glyph, tone) %}
-<article class="card metric">
-    <span class="metric-icon {{ tone }}">{{ icon(glyph, 17) }}</span>
-    <span class="metric-label">{{ label }}</span>
+<div class="metric">
+    <span class="metric-icon {{ tone }}">{{ icon(glyph, 16) }}</span>
     <strong id="{{ id }}" class="metric-value">—</strong>
-</article>
+    <span class="metric-label">{{ label }}</span>
+</div>
+{% endmacro %}
+
+{% macro course_identity(code='', title='', credits=none) %}
+<span class="course-identity">
+  <span class="course-meta"><span class="course-code">{{ code }}</span><span class="course-units"{% if credits is none %} hidden{% endif %}>{{ credits ~ ' cu' if credits is not none else '' }}</span></span>
+  <strong class="course-title">{{ title }}</strong>
+</span>
 {% endmacro %}

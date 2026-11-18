@@ -1,38 +1,47 @@
 {% extends "base.html" %}
-{% from "components.html" import icon, page_heading %}
+{% from "components.html" import icon, page_heading, course_identity %}
 {% block title %}Course Explorer · USask Course Planner{% endblock %}
 {% block scripts %}<script type="module" src="{{ url_for('static', filename='js/explorer.js') }}"></script>{% endblock %}
 {% block content %}
-{{ page_heading('Course Explorer', 'Find catalogue entries and check prerequisites against your latest saved plan.') }}
-<section class="card filters" aria-label="Course search">
-  <form id="lookup-form" class="filter-form">
-    <div class="filter-search"><label for="course-search">Search by title or course code</label><input id="course-search" type="search" value="{{ request.args.get('q', '') }}" placeholder="e.g. CMPT 141 or operating systems" maxlength="100" autocomplete="off"></div>
-    <div><label for="course-level">Level</label><select id="course-level"><option value="">All levels</option>{% for level in range(1, 10) %}<option value="{{ level }}">{{ level }}00 level</option>{% endfor %}</select></div>
-    <div><label for="course-scope">Scope</label><select id="course-scope"><option value="">All indexed</option><option value="starter">Starter template</option></select></div>
-    <button class="button primary" type="submit">{{ icon('search', 17) }} Look up code</button>
-  </form>
-  <p class="muted">Includes the dated CMPT index and locally cached courses. Look up other subjects by code.</p>
-</section>
-<div class="detail-grid">
-  <section class="card">
-    <header class="card-heading"><div><h2>Catalogue matches</h2><p id="result-count" role="status"></p></div></header>
-    <div id="search-results"></div>
-    <div class="card-actions" id="more-results" hidden><button id="show-more" class="button secondary" type="button">Show more</button></div>
+<div id="explorer-workspace" class="explorer-workspace">
+  <div class="explorer-heading">{{ page_heading('Course Explorer', 'Browse course records and check prerequisites against your saved progress.') }}</div>
+  <section class="card filters" aria-label="Course search">
+    <form id="lookup-form" class="filter-form">
+      <div class="filter-search"><label for="course-search">Course title or code</label><div class="search-field">{{ icon('search', 18) }}<input id="course-search" type="search" value="{{ request.args.get('q', '') }}" placeholder="Search courses" maxlength="100" autocomplete="off" aria-describedby="search-hint"></div></div>
+      <div><label for="course-level">Level</label><select id="course-level"><option value="">All levels</option>{% for level in range(1, 10) %}<option value="{{ level }}">{{ level }}00 level</option>{% endfor %}</select></div>
+      <div><label for="course-scope">Scope</label><select id="course-scope"><option value="">All indexed</option><option value="starter">Starter template</option></select></div>
+      <button class="button primary" type="submit">Look up code {{ icon('arrow', 16) }}</button>
+    </form>
+    <p class="muted" id="search-hint">Search the CMPT index and local cache, or look up an exact code from another subject.</p>
+    <p id="lookup-error" class="feedback-error" role="alert" hidden></p>
   </section>
-  <section id="course-details" class="card detail-card" aria-labelledby="detail-title" aria-busy="false">
-    <header><p id="detail-code" class="course-code"></p><h2 id="detail-title" tabindex="-1">Course details</h2></header>
-    <div id="lookup-message" role="status" class="muted">Select a result or look up a course by code.</div>
-    <div id="detail-content" hidden>
-      <div class="detail-meta"><span id="detail-status" class="badge"></span><span id="detail-credits" class="muted"></span></div>
-      <p id="detail-reason" class="detail-note" hidden></p>
-      <h3>Catalogue description</h3><p id="detail-description" class="course-text"></p>
-      <h3>Prerequisites</h3><p id="detail-prerequisites" class="course-text"></p>
-      <a id="detail-source" class="text-link">Official course entry {{ icon('external', 15) }}</a>
-      <span id="detail-retrieved" class="muted small"></span>
-      <div class="detail-meta"><a id="detail-assistant" class="button secondary">Open in AI Assistant {{ icon('arrow', 15) }}</a></div>
-    </div>
-  </section>
+  <div class="detail-grid">
+    <section class="card results-panel" aria-labelledby="results-heading">
+      <header class="card-heading"><div><h2 id="results-heading">Catalogue matches</h2><p id="result-count" role="status"></p></div></header>
+      <div id="search-results" class="course-list"></div>
+      <div class="card-actions" id="more-results" hidden><button id="show-more" class="button secondary" type="button">Show more</button></div>
+    </section>
+    <section id="course-details" class="card detail-card explorer-detail" aria-labelledby="detail-title">
+      <button id="back-to-results" type="button" class="button secondary">{{ icon('back', 16) }} Back to results</button>
+      <header class="detail-header">
+        <p id="detail-code" class="course-code" hidden></p>
+        <h2 id="detail-title" tabindex="-1">Course details</h2>
+      </header>
+      <p id="lookup-message" role="status" class="muted">Select a result or look up a course by code.</p>
+      <div id="detail-content" aria-busy="false" hidden>
+        <div class="detail-meta"><span id="detail-status" class="badge"></span><span id="detail-credits" class="muted"></span></div>
+        <p id="detail-reason" class="detail-note" hidden></p>
+        <div class="catalogue-source"><a id="detail-source" class="text-link">Official USask entry {{ icon('external', 15) }}</a><span id="detail-retrieved" class="muted small"></span></div>
+        <section class="prerequisite-section"><h3>Prerequisites</h3><p id="detail-prerequisites" class="course-text"></p></section>
+        <details id="course-description"><summary>Catalogue description</summary><p id="detail-description" class="course-text"></p></details>
+        <a id="detail-assistant" class="button secondary">Open in AI Assistant {{ icon('arrow', 15) }}</a>
+      </div>
+    </section>
+  </div>
+  <p class="catalogue-footnote">CMPT index · {{ catalogue.edition }} · checked {{ catalogue.retrieved }} <a href="{{ catalogue.source }}">Browse the official CMPT listing {{ icon('external', 14) }}</a></p>
 </div>
-<p class="catalogue-footnote">CMPT index · {{ catalogue.edition }} · checked {{ catalogue.retrieved }} <a href="{{ catalogue.source }}">Browse the official CMPT listing {{ icon('external', 14) }}</a></p>
+<template id="course-result">
+  <button type="button" class="course-entry search-result">{{ course_identity() }}<span class="badge row-status" hidden></span>{{ icon('arrow', 16) }}</button>
+</template>
 <script id="course-index" type="application/json">{{ courses|tojson }}</script>
 {% endblock %}

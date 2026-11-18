@@ -4,7 +4,7 @@
 {% block scripts %}<script type="module" src="{{ url_for('static', filename='js/assistant.js') }}"></script>{% endblock %}
 {% block content %}
 {{ page_heading('AI Assistant', 'Read official course information and, when configured, generate a short explanation.') }}
-<section class="card filters">
+<section class="card filters assistant-lookup" aria-label="Official course lookup">
   <form id="assistant-form" class="inline-form assistant-form" action="{{ url_for('main.summarize_course') }}" method="post">
     <div><label for="assistant-course">Course code</label><input id="assistant-course" name="course_code" maxlength="20" value="{{ code }}" placeholder="e.g. CMPT 141" required autocomplete="off"></div>
     <button class="button {{ 'secondary' if ai_enabled else 'primary' }}" type="submit" name="action" value="lookup">{{ icon('search', 17) }} Look up official entry</button>

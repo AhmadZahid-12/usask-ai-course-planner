@@ -24,17 +24,30 @@ export function completedCourses(plan) {
   } catch { return new Set(); }
 }
 
+const statuses = {
+  completed: {label: 'Completed', tone: 'complete'},
+  eligible: {label: 'Prerequisites met', tone: 'eligible'},
+  locked: {label: 'Locked', tone: 'locked'},
+  review: {label: 'Manual verification needed', tone: 'review'},
+  unavailable: {label: 'Status unavailable', tone: 'neutral'},
+};
+
+export function courseStatus(status, detail) {
+  return {...(statuses[status] || statuses.unavailable), detail};
+}
+
 export function eligibility(status, completed, code) {
-  if (completed.has(code)) return { label: 'Completed', tone: 'complete' };
-  if (status?.unlocked.includes(code)) return { label: 'Prerequisites met', tone: 'eligible' };
+  if (completed.has(code)) return courseStatus('completed');
+  if (status?.unlocked.includes(code)) return courseStatus('eligible');
   const locked = status?.locked.find(item => item.code === code);
-  if (locked?.reason) return { label: 'Manual verification needed', tone: 'review', detail: locked.reason };
-  if (locked) return { label: 'Locked', tone: 'locked', detail: `Missing ${locked.missing_prereqs.join(', ')}` };
-  return { label: 'Status unavailable', tone: 'neutral' };
+  if (locked?.reason) return courseStatus('review', locked.reason);
+  if (locked) return courseStatus('locked', `Missing ${locked.missing_prereqs.join(', ')}`);
+  return courseStatus('unavailable');
 }
 
 export function paintBadge(badge, state) {
-  badge.className = `badge ${state.tone}`;
+  badge.classList.remove('complete', 'eligible', 'locked', 'review', 'neutral');
+  badge.classList.add(state.tone);
   badge.textContent = state.label;
   if (state.detail) badge.title = state.detail;
   else badge.removeAttribute('title');
