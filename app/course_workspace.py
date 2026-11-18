@@ -50,6 +50,10 @@ def storage_available() -> bool:
     return student_storage_ready(StudentCourse, CourseMaterial)
 
 
+def needs_course_setup() -> bool:
+    return storage_available() and db.session.scalar(select(StudentCourse.id).limit(1)) is None
+
+
 def student_agenda(
     days: int, *, categories=None, course_code: str | None = None, deadlines_only: bool = False
 ) -> list[dict]:
@@ -95,10 +99,10 @@ def _course_or_404(course_id: int) -> StudentCourse:
     return db.get_or_404(StudentCourse, course_id)
 
 
-def _render_index(error=None):
+def _render_index(error=None, *, code="", title=""):
     ready = storage_available()
     courses = db.session.scalars(select(StudentCourse).order_by(StudentCourse.code)).all() if ready else []
-    return render_template("student_courses.html", courses=courses, ready=ready, error=error), 422 if error else 200
+    return render_template("student_courses.html", courses=courses, ready=ready, error=error, form_code=code, form_title=title), 422 if error else 200
 
 
 @bp.route("/student/courses", methods=["GET", "POST"])
@@ -107,10 +111,11 @@ def courses():
         return _render_index()
     if not storage_available():
         abort(503, "Course storage has not been enabled.")
-    code = normalize_code(request.form.get("code"))
+    submitted_code = request.form.get("code", "")
+    code = normalize_code(submitted_code)
     title = request.form.get("title", "").strip()
     if not COURSE_RE.fullmatch(code) or len(title) > 160:
-        return _render_index("Enter a course code such as CMPT 141 and a title under 161 characters.")
+        return _render_index("Enter a course code like CMPT 141 and a title up to 160 characters.", code=submitted_code[:20], title=title[:160])
     title = title or cmpt_catalogue()["courses"].get(code, {}).get("title") or code
     course = StudentCourse(code=code, title=title)
     db.session.add(course)
@@ -118,7 +123,7 @@ def courses():
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return _render_index(f"{code} already has a workspace.")
+        return _render_index(f"{code} already has a workspace. Open it above to add notes or deadlines.", code=submitted_code[:20], title=title)
     return redirect(url_for("workspace.course_page", course_id=course.id), code=303)
 
 

@@ -5,9 +5,20 @@
 {% block scripts %}<script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}
 {% block content %}
 <div class="dashboard-page">
-  {% call page_heading('Planning dashboard', 'Your Computer Science starter plan at a glance.') %}
+  {% call page_heading('Planning dashboard', 'See your deadlines and track your degree progress.') %}
+  {% if student_navigation|default(false) and setup_course %}
+  <a class="button primary" href="{{ url_for('workspace.courses') }}#personal-code">{{ icon('plus', 18) }} Add your first course</a>
+  {% else %}
   <a class="button primary" href="{{ url_for('main.planner') }}">{{ icon('planner', 18) }} Open degree planner {{ icon('arrow', 17) }}</a>
+  {% endif %}
   {% endcall %}
+  {% if student_navigation|default(false) and calendar_ready %}
+  <section class="card dashboard-deadlines" aria-labelledby="dashboard-deadlines-title">
+    <header class="card-heading"><div><h2 id="dashboard-deadlines-title">Upcoming deadlines</h2><p>Next 14 days · Saskatchewan time</p></div><a class="button secondary" href="{{ url_for('calendar.page') }}">Calendar {{ icon('arrow', 15) }}</a></header>
+    {% if deadlines %}{{ event_list(deadlines, true) }}
+    {% else %}<p class="inline-message">No deadlines yet. <a href="{{ url_for('syllabus.upload_page') }}">Import a syllabus</a> or add an event in Calendar.</p>{% endif %}
+  </section>
+  {% endif %}
   <section class="card overview" aria-labelledby="progress-title">
     <div class="overview-main">
       <div class="overview-title">
@@ -37,16 +48,9 @@
       </ul>
     </section>
     <aside class="dashboard-side" aria-label="Planning resources">
-      {% if student_navigation|default(false) %}
-      <section class="side-card"><h2>Upcoming deadlines</h2>
-        {% if not calendar_ready %}<p class="muted">Calendar storage needs setup.</p>
-        {% elif deadlines %}{{ event_list(deadlines, true) }}
-        {% else %}<p class="muted">No deadlines saved for the next 14 days.</p>{% endif %}
-        <a class="text-link" href="{{ url_for('calendar.page') }}">Open calendar {{ icon('arrow', 15) }}</a>
-      </section>
-      {% endif %}
       <section class="side-card">
         <h2>Planning tools</h2>
+        <a class="quick-link" href="{{ url_for('main.planner') }}">{{ icon('planner', 17) }}<span>Open degree planner</span>{{ icon('arrow', 16) }}</a>
         <a class="quick-link" href="{{ url_for('main.explorer') }}">{{ icon('search', 17) }}<span>Find a course</span>{{ icon('arrow', 16) }}</a>
         <a class="quick-link" href="{{ url_for('main.assistant') }}">{{ icon('spark', 17) }}<span>Get a course summary</span>{{ icon('arrow', 16) }}</a>
       </section>

@@ -6,7 +6,7 @@
 {% block content %}
 <a class="text-link student-back" href="{{ url_for('workspace.courses') }}">{{ icon('back', 15) }} My courses</a>
 {% call page_heading(course.title, course.code) %}
-<div class="button-group"><a class="button secondary" href="{{ catalogue }}">Official catalogue {{ icon('external', 15) }}</a><a class="button primary" href="{{ url_for('calendar.page', course=course.code) }}">Open calendar {{ icon('arrow', 16) }}</a></div>
+<div class="button-group"><a class="button secondary" href="{{ url_for('calendar.page', course=course.code) }}">Open calendar {{ icon('arrow', 16) }}</a><a class="button primary" href="{{ url_for('syllabus.upload_page', course_code=course.code) }}">{{ icon('upload', 16) }} Import syllabus</a></div>
 {% endcall %}
 {% if error %}<p class="notice error-text" role="alert">{{ error }}</p>{% endif %}
 {% set messages = {'notes': 'Notes saved.', 'material': 'Material added.', 'removed': 'Material removed.'} %}
@@ -47,7 +47,7 @@
   <aside class="card student-panel">
     <h2>Course deadlines</h2><p class="muted">Next 90 days · Saskatchewan time</p>
     {% if deadlines %}{{ event_list(deadlines, true) }}{% else %}<p class="muted student-aside-empty">No upcoming deadlines are recorded for {{ course.code }}.</p>{% endif %}
-    <a class="text-link" href="{{ url_for('syllabus.upload_page', course_code=course.code) }}">Review a syllabus {{ icon('arrow', 16) }}</a>
+    <a class="text-link" href="{{ catalogue }}">Official catalogue {{ icon('external', 15) }}</a>
   </aside>
 </div>
 <dialog id="remove-material-dialog" aria-labelledby="remove-material-title">

@@ -45,3 +45,9 @@
 .student-planning .button-group { margin-top: 10px; }
 #remove-material-dialog form { margin-top: 14px; }
 @media (max-width: 930px) { .student-layout { grid-template-columns: 1fr; } }
+
+.dashboard-deadlines { margin-bottom: var(--gap); }
+.dashboard-deadlines .student-events { padding-inline: 16px; }
+.dashboard-deadlines .inline-message a { color: var(--accent); text-decoration: underline; }
+.student-events strong a:hover { text-decoration: underline; }
+.agenda-suggestion-link { color: var(--accent); text-decoration: underline; }
