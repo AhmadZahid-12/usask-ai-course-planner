@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "components.html" import icon, page_heading %}
+{% from "student_events.html" import event_list %}
+{% block title %}{{ title }} · Planning assistant{% endblock %}
+{% block content %}
+{% call page_heading(title, 'A read-only view of your saved calendar. Times are shown in Saskatchewan time.') %}
+<a class="button secondary" href="{{ url_for('calendar.page') }}">Open calendar {{ icon('arrow', 16) }}</a>
+{% endcall %}
+<nav class="student-tabs" aria-label="Planning window">
+  {% for key, label in [('today','Today'), ('week','Next seven days'), ('exams','Exams')] %}
+  <a href="{{ url_for('workspace.agenda', view=key) }}"{% if view == key %} aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+<div class="student-layout">
+  <section class="card">
+    <header class="card-heading"><div><h2>Confirmed calendar entries</h2><p>From your saved events</p></div></header>
+    {% if not ready %}<p class="inline-message">Calendar storage is disabled until the student migration is approved and run.</p>
+    {% elif events %}{{ event_list(events) }}
+    {% else %}<p class="inline-message">There are no saved events in this window.</p>{% endif %}
+  </section>
+  <aside class="card student-panel">
+    <span class="badge eligible">{{ icon('spark', 14) }} Suggestion</span>
+    <h2>What to work on</h2>
+    {% if suggestion %}<p>Review <strong>{{ suggestion.title }}</strong> first. It is the earliest assignment, quiz or exam in this window.</p>
+    {% else %}<p class="muted">Add deadlines to your calendar to get a suggestion based on their order.</p>{% endif %}
+  </aside>
+</div>
+{% endblock %}

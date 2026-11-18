@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "components.html" import icon, page_heading %}
+{% block title %}Syllabus import · USask workspace{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="{{ url_for('static', filename='syllabus.css') }}">
+<script type="module" src="{{ url_for('static', filename='js/syllabus.js') }}"></script>
+{% endblock %}
+{% block content %}
+<div class="syllabus-page">
+  {% call page_heading('Syllabus import', 'Review dates from a syllabus before adding them to your calendar.') %}
+  <a class="button secondary" href="{{ request.script_root }}/calendar">{{ icon('planner', 18) }} Calendar</a>
+  {% endcall %}
+
+  <div class="syllabus-intake">
+    <form id="syllabus-upload" class="card syllabus-upload" action="{{ url_for('syllabus.preview') }}" method="post" enctype="multipart/form-data">
+      <div>
+        <h2>Choose a syllabus</h2>
+        <p class="muted">Text-based PDF or UTF-8 text, up to 4 MB.</p>
+      </div>
+      <div class="syllabus-file">
+        <input class="visually-hidden" id="syllabus-file" name="syllabus" type="file" accept=".pdf,.txt,application/pdf,text/plain" required aria-describedby="syllabus-file-note">
+        <label for="syllabus-file">
+          <span class="syllabus-file-icon">{{ icon('upload', 21) }}</span>
+          <span><strong>Choose file</strong><small id="syllabus-file-note">No file selected</small></span>
+        </label>
+      </div>
+      <div class="syllabus-upload-actions">
+        <div><label for="syllabus-course">Course code <span class="muted">(optional)</span></label><input id="syllabus-course" name="course_code" placeholder="CMPT 141" maxlength="30" value="{{ prefill_course }}"></div>
+        <button class="button primary" type="submit">{{ icon('search', 17) }} Find deadlines</button>
+      </div>
+      <p id="syllabus-upload-message" role="status" hidden></p>
+    </form>
+    <aside class="card syllabus-guide" aria-labelledby="syllabus-guide-title">
+      <span class="syllabus-file-icon">{{ icon('check', 18) }}</span>
+      <h2 id="syllabus-guide-title">You approve each date</h2>
+      <p>Check suggestions against the quoted syllabus text. Missing or tentative dates stay unconfirmed until you review them.</p>
+      <p class="muted">The file is processed locally. Approved events keep a short source excerpt.</p>
+    </aside>
+  </div>
+
+  <section id="syllabus-review" class="syllabus-review" data-approve-url="{{ url_for('syllabus.approve') }}" aria-labelledby="syllabus-review-title" hidden>
+    <header class="syllabus-review-heading">
+      <div><h2 id="syllabus-review-title" tabindex="-1">Review deadlines</h2><p class="muted" id="syllabus-summary"></p></div>
+      <div class="syllabus-zone"><label for="syllabus-zone">Time zone for timed deadlines</label><input id="syllabus-zone" maxlength="80" list="syllabus-zones" value="{{ default_zone }}" aria-describedby="syllabus-time-note">
+        <datalist id="syllabus-zones">
+          <option value="America/Regina"><option value="America/Edmonton"><option value="America/Vancouver"><option value="America/Winnipeg"><option value="America/Toronto"><option value="America/Halifax"><option value="America/St_Johns"><option value="UTC">
+        </datalist>
+      </div>
+    </header>
+    <p class="muted syllabus-time-note" id="syllabus-time-note">A blank time adds an all-day entry. Timed deadlines use a 15-minute calendar marker.</p>
+    <form id="syllabus-approval">
+      <div id="syllabus-candidates"></div>
+      <div class="syllabus-approval-bar">
+        <p id="syllabus-approval-message" role="status" tabindex="-1">Select the deadlines you want to import.</p>
+        <button id="syllabus-approve" type="submit" class="button primary" disabled>Add selected deadlines</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<template id="syllabus-card">
+  <fieldset class="card syllabus-proposal">
+    <legend class="visually-hidden"></legend>
+    <div class="syllabus-proposal-head">
+      <span class="badge syllabus-precision"></span>
+      <span class="syllabus-position muted"></span>
+      <label class="syllabus-check"><input type="checkbox" name="approved"> Approve</label>
+    </div>
+    <div class="syllabus-fields">
+      <label class="syllabus-event-title">Title <input name="title" maxlength="120"></label>
+      <label>Category <select name="category"><option value="assignment">Assignment</option><option value="quiz">Quiz</option><option value="exam">Exam</option><option value="personal">Other</option></select></label>
+      <label>Date <input name="date" type="date"></label>
+      <label>Time <input name="time" type="time"></label>
+      <label>Course code <input name="course_code" maxlength="30"></label>
+    </div>
+    <div class="syllabus-source"><p class="syllabus-reason muted"></p><blockquote></blockquote></div>
+    <button type="button" class="button secondary syllabus-reject">Reject</button>
+  </fieldset>
+</template>
+{% endblock %}

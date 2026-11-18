@@ -1,0 +1,12 @@
+{% from "components.html" import icon %}
+{% macro event_list(events, compact=false) %}
+<ul class="student-events{% if compact %} compact-events{% endif %}">
+  {% for event in events %}
+  <li>
+    <span class="event-mark event-{{ event.category }}">{{ icon('planner' if event.category == 'class' else 'check' if event.category == 'assignment' else 'review' if event.category in ['quiz','exam'] else 'book', 16) }}</span>
+    <div><strong>{{ event.title }}</strong><small>{{ event.when }}{% if event.course_code %} · {{ event.course_code }}{% endif %}</small></div>
+    {% if not compact %}<span class="badge neutral">{{ event.category|capitalize }}</span>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endmacro %}

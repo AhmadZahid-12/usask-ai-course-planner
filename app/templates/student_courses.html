@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "components.html" import icon, page_heading %}
+{% block title %}My courses · Student workspace{% endblock %}
+{% block content %}
+{{ page_heading('My courses', 'Keep your class notes, deadlines and study materials together.') }}
+{% if not ready %}<p class="notice" role="status">Course storage is disabled. Run the approved student migration to enable this workspace.</p>{% else %}
+<div class="student-layout">
+  <section class="card" aria-labelledby="enrolled-title">
+    <header class="card-heading"><h2 id="enrolled-title">Course workspaces</h2><span class="badge neutral">{{ courses|length }} enrolled</span></header>
+    {% if courses %}
+    <ul class="student-course-list">
+      {% for course in courses %}
+      <li><a class="course-entry" href="{{ url_for('workspace.course_page', course_id=course.id) }}"><span class="course-identity"><span class="course-code">{{ course.code }}</span><strong class="course-title">{{ course.title }}</strong></span>{{ icon('arrow', 17) }}</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="student-empty"><span class="metric-icon eligible">{{ icon('book', 18) }}</span><div><h3>Your courses will appear here</h3><p class="muted">Add an enrolled course to start a workspace.</p></div></div>
+    {% endif %}
+  </section>
+  <section class="card student-panel" aria-labelledby="add-course-title">
+    <h2 id="add-course-title">Add a course</h2>
+    {% if error %}<p class="feedback-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" class="student-form">
+      <label for="personal-code">Course code</label><input id="personal-code" name="code" maxlength="20" placeholder="CMPT 141" required>
+      <label for="personal-title">Title <span class="muted">(optional)</span></label><input id="personal-title" name="title" maxlength="160" placeholder="Use the catalogue title when available">
+      <button class="button primary" type="submit">{{ icon('plus', 17) }} Add course</button>
+    </form>
+  </section>
+</div>
+{% endif %}
+{% endblock %}

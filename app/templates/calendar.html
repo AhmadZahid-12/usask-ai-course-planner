@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% from 'components.html' import icon, page_heading %}
+{% block title %}Calendar · USask workspace{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="{{ url_for('static', filename='calendar.css') }}">
+<script type="module" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+{% endblock %}
+{% block content %}
+{% call page_heading('Calendar', 'Make room for classes, deadlines, and focused study.') %}
+<div class="button-group calendar-heading-actions">
+  <a class="button secondary" href="{{ url_for('syllabus.upload_page') }}">{{ icon('upload', 17) }} Import syllabus</a>
+  <button class="button primary" id="calendar-new" type="button">{{ icon('plus', 18) }} New event</button>
+</div>
+{% endcall %}
+
+<p class="notice" id="calendar-change-status" role="status" hidden></p>
+<div class="calendar-layout" id="calendar-workspace">
+  <section class="card calendar-board" aria-labelledby="calendar-range-title">
+    <header class="calendar-toolbar">
+      <div class="calendar-period">
+        <h2 id="calendar-range-title" aria-live="polite">Calendar</h2>
+        <div class="calendar-pager">
+          <button class="icon-button" id="calendar-prev" type="button" aria-label="Previous period">{{ icon('back', 16) }}</button>
+          <button class="button secondary" id="calendar-today" type="button">Today</button>
+          <button class="icon-button" id="calendar-next" type="button" aria-label="Next period">{{ icon('arrow', 16) }}</button>
+        </div>
+      </div>
+      <div class="calendar-views" role="group" aria-label="Calendar view">
+        <button type="button" data-calendar-view="month" aria-pressed="true">Month</button>
+        <button type="button" data-calendar-view="week" aria-pressed="false">Week</button>
+        <button type="button" data-calendar-view="day" aria-pressed="false">Day</button>
+      </div>
+    </header>
+    <p id="calendar-status" class="calendar-feedback muted" role="status">Loading your calendar…</p>
+    <div id="calendar-grid" class="calendar-content" aria-busy="true"></div>
+    <div class="calendar-footer">
+      <span class="calendar-shortcuts muted"><kbd>←</kbd> <kbd>→</kbd> Browse dates <kbd>N</kbd> New event</span>
+      <label for="calendar-zone">Time zone <input id="calendar-zone" list="calendar-time-zones" type="text" maxlength="80" autocomplete="off" spellcheck="false" aria-describedby="calendar-zone-status"></label>
+      <datalist id="calendar-time-zones"></datalist>
+      <span id="calendar-zone-status" class="muted" role="status" hidden></span>
+    </div>
+  </section>
+
+  <aside class="calendar-aside">
+    <section class="card calendar-agenda" id="calendar-agenda" aria-labelledby="calendar-agenda-title">
+      <div class="calendar-agenda-header">
+        <span class="metric-icon eligible">{{ icon('planner', 18) }}</span>
+        <div><p class="muted">Daily agenda</p><h2 id="calendar-agenda-title" tabindex="-1">Selected day</h2></div>
+      </div>
+      <div id="calendar-agenda-list"></div>
+      <button class="button secondary calendar-agenda-add" id="calendar-day-add" type="button">{{ icon('plus', 17) }} Add to this day</button>
+    </section>
+    <section class="card calendar-reminders" id="calendar-reminders" aria-labelledby="calendar-reminders-title" hidden>
+      <div class="calendar-agenda-header">
+        <span class="metric-icon review">{{ icon('review', 18) }}</span><div><h2 id="calendar-reminders-title">Reminders</h2><p class="muted">Shown while the calendar is open.</p></div>
+      </div>
+      <ul id="calendar-reminder-list"></ul>
+    </section>
+  </aside>
+</div>
+
+<dialog class="form-dialog calendar-dialog" id="calendar-editor" aria-labelledby="calendar-editor-title">
+  <div class="dialog-heading">
+    <div><h2 id="calendar-editor-title">New event</h2><p class="muted" id="calendar-editor-zone"></p></div>
+    <button class="icon-button" id="calendar-editor-close" type="button" aria-label="Close event editor">{{ icon('close', 18) }}</button>
+  </div>
+  <form id="calendar-event-form">
+    <div class="calendar-fields">
+      <label>Title <input id="calendar-event-title" name="title" required maxlength="160" placeholder="Event name" autofocus></label>
+      <div class="calendar-field-row">
+        <label>Category
+          <select name="category">
+            <option value="class">Class</option><option value="assignment">Assignment</option><option value="quiz">Quiz</option>
+            <option value="exam">Exam</option><option value="study">Study session</option><option value="personal">Personal</option>
+          </select>
+        </label>
+        <label>Course code <input name="course_code" maxlength="24" placeholder="e.g. CMPT 141"></label>
+      </div>
+      <label class="calendar-checkbox"><input type="checkbox" name="all_day"> All-day event</label>
+      <div class="calendar-field-row">
+        <label>Starts <input name="start" required type="datetime-local"></label>
+        <label><span id="calendar-end-label">Ends</span> <input name="end" required type="datetime-local"></label>
+      </div>
+      <div class="calendar-field-row" id="calendar-clock-choices" hidden>
+        <label id="calendar-start-clock" hidden>Start clock change
+          <select name="start_clock"><option value="">Choose an occurrence</option><option value="first">First occurrence</option><option value="last">Second occurrence</option></select>
+        </label>
+        <label id="calendar-end-clock" hidden>End clock change
+          <select name="end_clock"><option value="">Choose an occurrence</option><option value="first">First occurrence</option><option value="last">Second occurrence</option></select>
+        </label>
+      </div>
+      <label>Reminder
+        <select name="reminder_minutes" aria-describedby="calendar-reminder-help">
+          <option value="">None</option><option value="0">At start</option><option value="5">5 minutes before</option>
+          <option value="15">15 minutes before</option><option value="30">30 minutes before</option>
+          <option value="60">1 hour before</option><option value="1440">1 day before</option><option value="10080">1 week before</option>
+        </select>
+        <small class="muted" id="calendar-reminder-help">Shown in the open calendar. All-day reminders count back from midnight in the event time zone.</small>
+      </label>
+      <label>Description <textarea name="description" maxlength="4000" rows="3" placeholder="Location, details, or a link"></textarea></label>
+      <p id="calendar-editor-error" class="calendar-error" role="alert" hidden></p>
+    </div>
+    <footer class="dialog-footer calendar-editor-footer">
+      <button type="button" class="button danger" id="calendar-delete" hidden>Delete</button>
+      <button type="button" class="button secondary" id="calendar-editor-cancel">Cancel</button>
+      <button class="button primary" id="calendar-save" type="submit">Save event</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="form-dialog calendar-dialog" id="calendar-confirm" aria-labelledby="calendar-confirm-title">
+  <div class="dialog-heading"><div><h2 id="calendar-confirm-title">Delete event?</h2><p class="muted" id="calendar-confirm-detail"></p></div></div>
+  <form method="dialog" class="dialog-footer">
+    <button class="button secondary" value="cancel" autofocus>Keep event</button>
+    <button class="button danger" value="delete">Delete event</button>
+  </form>
+</dialog>
+{% endblock %}

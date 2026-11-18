@@ -4,7 +4,7 @@ A local Flask workspace for tracking Computer Science courses, checking prerequi
 
 ## Run locally
 
-Use Python 3.10 or later. From the project directory:
+Use Python 3.10 or later with IANA time-zone data available to Python (system zoneinfo or the Python `tzdata` package). From the project directory:
 
 ```sh
 python3 -m venv .venv
@@ -44,3 +44,31 @@ git diff --check
 ```
 
 The suite uses an in-memory database and mocks external catalogue and AI calls where needed.
+
+## Student workspace
+
+The calendar supports month, week and day views, editable events, course links and in-app reminder times. Timed events store UTC instants and use the selected IANA time zone for display. All-day dates stay the same across time zones. Calendar entries are entered by the student or approved during syllabus import. They are independent of official class availability.
+
+Syllabus import accepts text-based PDF or UTF-8 text. A local parser proposes deadlines and shows the original text and PDF page. Review each candidate, correct uncertain dates and approve only the entries you want to save. Scans without a text layer need a text export, and the parser may miss irregular tables or wording. Uploads are kept local. The syllabus itself is discarded after preview.
+
+My Courses stores notes and materials in the local database. Filename search works for saved files, and supported extracted text is searchable when available. Dashboard deadlines and Assistant agenda views use saved calendar entries. Prioritization is deterministic and read-only. It does not read uploaded documents or send private data to an external model.
+
+### Enable storage after approving the migration
+
+Starting the app does not apply student migrations. The original database initialization command handles the legacy Planner separately.
+
+For a new installation with no database file:
+
+```sh
+python -m flask --app main migrate-student
+```
+
+For an existing installation, use a new backup path outside the checkout:
+
+```sh
+python -m flask --app main migrate-student --backup ~/planner-before-student.sqlite
+```
+
+The command uses SQLite's online backup API before changing an existing database. Schema version 1 adds calendar storage and version 2 adds course workspaces and materials. The migration is additive and leaves saved plans and catalogue records intact. Keep the backup private because it may contain personal notes or uploaded material. The app keeps working as a local planner before the student migrations run.
+
+This build is single-user for local use. Public deployment would require authentication, per-user authorization, isolated document storage, retention and deletion controls, rate limits, and operational monitoring.

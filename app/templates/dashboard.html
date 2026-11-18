@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "components.html" import icon, metric, page_heading, course_identity %}
+{% from "student_events.html" import event_list %}
 {% block title %}Dashboard · USask Course Planner{% endblock %}
 {% block scripts %}<script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}
 {% block content %}
@@ -36,6 +37,14 @@
       </ul>
     </section>
     <aside class="dashboard-side" aria-label="Planning resources">
+      {% if student_navigation|default(false) %}
+      <section class="side-card"><h2>Upcoming deadlines</h2>
+        {% if not calendar_ready %}<p class="muted">Calendar storage needs setup.</p>
+        {% elif deadlines %}{{ event_list(deadlines, true) }}
+        {% else %}<p class="muted">No deadlines saved for the next 14 days.</p>{% endif %}
+        <a class="text-link" href="{{ url_for('calendar.page') }}">Open calendar {{ icon('arrow', 15) }}</a>
+      </section>
+      {% endif %}
       <section class="side-card">
         <h2>Planning tools</h2>
         <a class="quick-link" href="{{ url_for('main.explorer') }}">{{ icon('search', 17) }}<span>Find a course</span>{{ icon('arrow', 16) }}</a>

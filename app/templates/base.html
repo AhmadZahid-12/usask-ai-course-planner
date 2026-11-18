@@ -1,11 +1,12 @@
 {% from "components.html" import icon %}
-{% set pages = [('home', 'Dashboard', 'dashboard'), ('explorer', 'Course Explorer', 'search'), ('planner', 'Degree Planner', 'planner'), ('assistant', 'AI Assistant', 'spark'), ('settings', 'Settings', 'settings')] %}
-{% set current = request.endpoint.split('.')[-1] if request.endpoint else '' %}
+{% set student_pages = [('calendar.page', 'Calendar', 'planner'), ('workspace.courses', 'My courses', 'book'), ('syllabus.upload_page', 'Syllabus import', 'upload')] if student_navigation|default(false) else [] %}
+{% set pages = [('main.home', 'Dashboard', 'dashboard')] + student_pages + [('main.explorer', 'Course Explorer', 'search'), ('main.planner', 'Degree Planner', 'planner'), ('main.assistant', 'AI Assistant', 'spark'), ('main.settings', 'Settings', 'settings')] %}
+{% set current = {'main.summarize_course': 'main.assistant', 'workspace.course_page': 'workspace.courses', 'workspace.agenda': 'main.assistant'}.get(request.endpoint, request.endpoint) %}
 {% macro navigation() %}
 <nav class="navigation" aria-label="Workspace">
   {% for endpoint, label, glyph in pages %}
-  {% set active = current == endpoint or (endpoint == 'assistant' and current == 'summarize_course') %}
-  <a class="nav-link" href="{{ url_for('main.' ~ endpoint) }}" title="{{ label }}"{% if active %} aria-current="page"{% endif %}>{{ icon(glyph, 18) }}<span>{{ label }}</span></a>
+  {% set active = current == endpoint %}
+  <a class="nav-link" href="{{ url_for(endpoint) }}" title="{{ label }}"{% if active %} aria-current="page"{% endif %}>{{ icon(glyph, 18) }}<span>{{ label }}</span></a>
   {% endfor %}
 </nav>
 {% endmacro %}
@@ -24,6 +25,7 @@
   </script>
   <link rel="preload" href="{{ url_for('static', filename='fonts/inter-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% if student_navigation|default(false) %}<link rel="stylesheet" href="{{ url_for('static', filename='student.css') }}">{% endif %}
   <script type="module" src="{{ url_for('static', filename='js/shell.js') }}"></script>
   {% block scripts %}{% endblock %}
 </head>
@@ -43,7 +45,7 @@
     <header class="topbar">
       <div class="topbar-start"><button id="sidebar-toggle" class="icon-button" type="button" aria-label="Toggle navigation" aria-controls="desktop-sidebar">{{ icon('panel', 19) }}</button>
         <span class="topbar-divider"></span>
-        <span>{% for endpoint, label, glyph in pages %}{% if current == endpoint or (current == 'summarize_course' and endpoint == 'assistant') %}{{ label }}{% endif %}{% endfor %}</span>
+        <span>{% for endpoint, label, glyph in pages %}{% if current == endpoint %}{{ label }}{% endif %}{% endfor %}</span>
       </div>
       <div class="topbar-actions">
         <a class="header-search" aria-label="Find a course" href="{{ url_for('main.explorer', focus='search') }}">{{ icon('search', 17) }}<span>Find a course</span><kbd>/</kbd></a>

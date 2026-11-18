@@ -4,6 +4,17 @@
 {% block scripts %}<script type="module" src="{{ url_for('static', filename='js/assistant.js') }}"></script>{% endblock %}
 {% block content %}
 {{ page_heading('AI Assistant', 'Read official course information and, when configured, generate a short explanation.') }}
+{% if student_navigation|default(false) %}
+<section class="card student-panel student-planning" aria-labelledby="planning-assistant-title">
+  <h2 id="planning-assistant-title">Plan from your calendar</h2>
+  <p class="muted">See confirmed events and get a prioritization suggestion based on saved deadlines.</p>
+  <div class="button-group">
+    <a class="button secondary" href="{{ url_for('workspace.agenda', view='today') }}">What should I work on today?</a>
+    <a class="button secondary" href="{{ url_for('workspace.agenda', view='week') }}">Plan the next seven days</a>
+    <a class="button secondary" href="{{ url_for('workspace.agenda', view='exams') }}">Find upcoming exams</a>
+  </div>
+</section>
+{% endif %}
 <section class="card filters assistant-lookup" aria-label="Official course lookup">
   <form id="assistant-form" class="inline-form assistant-form" action="{{ url_for('main.summarize_course') }}" method="post">
     <div><label for="assistant-course">Course code</label><input id="assistant-course" name="course_code" maxlength="20" value="{{ code }}" placeholder="e.g. CMPT 141" required autocomplete="off"></div>

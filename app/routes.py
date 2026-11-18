@@ -1,15 +1,18 @@
 from flask import Blueprint, Response, render_template, request, jsonify
 import json
 import os
-from pathlib import Path
 
 from app.gpt_helper import SUMMARY_UNAVAILABLE, summarize_course
 from app.scraper import course_url, get_course_raw_info
 
+from app.calendar_store import CalendarEvent
 from app.catalogue import available_courses, cmpt_catalogue, course_detail, latest_completed, starter_catalogue
+from app.course_workspace import DEADLINE_CATEGORIES, student_agenda
 from app.db import db
+from app.institutions.usask import DEGREE_FILE as DEFAULT_DEGREE_FILE, PROGRAM_URL
 from app.models import Plan
 from app.planner import COURSE_RE, normalize_code
+from app.student_migrations import student_storage_ready
 
 from app.services import (
     bulk_scrape_courses,
@@ -19,17 +22,13 @@ from app.services import (
 
 bp = Blueprint("main", __name__)
 
-DEGREE_DIR = Path(__file__).resolve().parent / "degree"
-DEFAULT_DEGREE_FILE = DEGREE_DIR / "bsc_cs.json"
-PROGRAM_URL = "https://programs.usask.ca/arts-and-science/computer-science/bsc-4-computer-science.php"
-
-
 @bp.route("/", methods=["GET"])
 def home():
     catalogue = starter_catalogue()
     return render_template(
         "dashboard.html", courses=template_courses(), edition=catalogue["edition"],
-        program_url=PROGRAM_URL,
+        program_url=PROGRAM_URL, calendar_ready=student_storage_ready(CalendarEvent),
+        deadlines=student_agenda(14, categories=DEADLINE_CATEGORIES)[:4],
     )
 
 
