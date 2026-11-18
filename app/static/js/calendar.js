@@ -111,7 +111,8 @@ function visibleRange() {
     return [start, shiftDate(start, 7)];
   }
   const first = `${selected.slice(0, 7)}-01`;
-  return [firstOfWeek(first), shiftDate(firstOfWeek(first), 42)];
+  const last = shiftDate(shiftMonth(first, 1), -1);
+  return [firstOfWeek(first), shiftDate(firstOfWeek(last), 7)];
 }
 
 function dateSequence(start, end) {

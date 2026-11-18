@@ -191,7 +191,7 @@
 @media (max-width: 760px) {
   .calendar-toolbar { gap: 9px; padding: 10px; }
   .calendar-period { flex: 1; justify-content: space-between; }
-  .calendar-cell { min-height: 60px; padding: 1px; text-align: center; }
+  .calendar-cell { min-height: 47px; padding: 1px; text-align: center; }
   .calendar-date { min-width: 36px; min-height: 36px; }
   .calendar-cell-events { display: none; }
   .calendar-dots { display: flex; gap: 2px; justify-content: center; min-height: 8px; }
@@ -209,4 +209,37 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .calendar-event, .calendar-date, .calendar-views button { transition: background-color .17s ease, border-color .17s ease; }
+}
+
+.calendar-board { border: 0; border-radius: 0; background: transparent; }
+.calendar-toolbar { padding: 0 0 12px; border-bottom: 2px solid var(--accent); flex-wrap: wrap; }
+.calendar-period h2 { font: 400 clamp(1.7rem, 3vw, 2.35rem)/1 var(--display); letter-spacing: 0; }
+.calendar-views { background: transparent; border: 0; border-radius: 0; padding: 0; }
+.calendar-views button { border-radius: 4px; min-height: 36px; }
+.calendar-views button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); box-shadow: none; }
+.calendar-weekdays { background: transparent; color: var(--muted); }
+.calendar-weekdays span { padding-block: 10px; }
+.calendar-cell[data-outside="true"] { background: color-mix(in srgb, var(--sidebar) 58%, var(--bg)); }
+.calendar-cell[data-selected="true"] { box-shadow: inset 0 2px var(--accent); }
+.calendar-date { font-variant-numeric: tabular-nums; border-radius: 4px; }
+.calendar-event { border-radius: 3px; }
+.calendar-day { padding: 16px 0; }
+.calendar-day h3 { font: 400 1.9rem/1.1 var(--display); }
+.calendar-day .calendar-event { max-width: 650px; }
+.calendar-agenda, .calendar-reminders { border: 0; border-top: 2px solid var(--border); border-radius: 0; background: transparent; padding: 14px 0 0; }
+.calendar-agenda-header .metric-icon { display: none; }
+.calendar-agenda-header h2 { font: 400 1.7rem/1.1 var(--display); }
+.calendar-agenda-add { width: auto; }
+.calendar-footer { grid-column: 1 / -1; padding-inline: 0; }
+@media (max-width: 760px) {
+  .calendar-toolbar { row-gap: 6px; }
+  .calendar-period { flex-basis: 100%; }
+  .calendar-board { overflow: visible; }
+  .calendar-week-day { padding-inline: 0; }
+}
+
+@media (max-width: 540px) {
+  .calendar-layout { gap: 14px; }
+  .calendar-heading-actions .button { min-height: 38px; }
+  .calendar-footer { padding-block: 7px; }
 }

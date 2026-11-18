@@ -6,7 +6,7 @@
 <script type="module" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
 {% endblock %}
 {% block content %}
-{% call page_heading('Calendar', 'Make room for classes, deadlines, and focused study.') %}
+{% call page_heading('Calendar', 'Classes, deadlines and study time.') %}
 <div class="button-group calendar-heading-actions">
   <a class="button secondary" href="{{ url_for('syllabus.upload_page') }}">{{ icon('upload', 17) }} Import syllabus</a>
   <button class="button primary" id="calendar-new" type="button">{{ icon('plus', 18) }} New event</button>
@@ -33,12 +33,6 @@
     </header>
     <p id="calendar-status" class="calendar-feedback muted" role="status">Loading your calendar…</p>
     <div id="calendar-grid" class="calendar-content" aria-busy="true"></div>
-    <div class="calendar-footer">
-      <span class="calendar-shortcuts muted"><kbd>←</kbd> <kbd>→</kbd> Browse dates <kbd>N</kbd> New event</span>
-      <label for="calendar-zone">Time zone <input id="calendar-zone" list="calendar-time-zones" type="text" maxlength="80" autocomplete="off" spellcheck="false" aria-describedby="calendar-zone-status"></label>
-      <datalist id="calendar-time-zones"></datalist>
-      <span id="calendar-zone-status" class="muted" role="status" hidden></span>
-    </div>
   </section>
 
   <aside class="calendar-aside">
@@ -57,6 +51,12 @@
       <ul id="calendar-reminder-list"></ul>
     </section>
   </aside>
+  <div class="calendar-footer">
+    <span class="calendar-shortcuts muted"><kbd>←</kbd> <kbd>→</kbd> Browse dates <kbd>N</kbd> New event</span>
+    <label for="calendar-zone">Time zone <input id="calendar-zone" list="calendar-time-zones" type="text" maxlength="80" autocomplete="off" spellcheck="false" aria-describedby="calendar-zone-status"></label>
+    <datalist id="calendar-time-zones"></datalist>
+    <span id="calendar-zone-status" class="muted" role="status" hidden></span>
+  </div>
 </div>
 
 <dialog class="form-dialog calendar-dialog" id="calendar-editor" aria-labelledby="calendar-editor-title">
