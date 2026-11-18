@@ -8,6 +8,7 @@ const template = document.querySelector('#syllabus-card');
 const approvalButton = document.querySelector('#syllabus-approve');
 const uploadStatus = document.querySelector('#syllabus-upload-message');
 const approvalStatus = document.querySelector('#syllabus-approval-message');
+const calendarResult = document.querySelector('#syllabus-calendar-result');
 
 const precisionLabels = {
   timed: ['Date and time found', 'eligible'],
@@ -79,6 +80,7 @@ upload.addEventListener('submit', async event => {
   report(uploadStatus, 'Reading the syllabus…');
   try {
     const result = await post(upload.action, {method: 'POST', body});
+    calendarResult.hidden = true;
     proposals.replaceChildren(...result.candidates.map(proposalCard));
     if (!result.candidates.length) {
       review.hidden = true;
@@ -150,6 +152,13 @@ form.addEventListener('submit', async event => {
     saved = true;
     const added = result.events.length;
     const duplicates = result.duplicate_count;
+    calendarResult.hidden = !added;
+    if (added) {
+      const url = new URL(calendarResult.href);
+      url.searchParams.set('event', String(result.events[0].id));
+      calendarResult.href = url.href;
+      calendarResult.textContent = added === 1 ? 'View imported deadline' : 'View first imported deadline';
+    }
     report(approvalStatus, `${added} added to the calendar.${duplicates ? ` ${duplicates} already in the calendar.` : ''}`);
     approvalStatus.focus();
   } catch (error) {

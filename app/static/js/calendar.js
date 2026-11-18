@@ -80,9 +80,15 @@ function displayDate(date, options) {
 
 const dateLabel = date => displayDate(date, {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'});
 let zone = validZone(stored('planner-calendar-zone', '')) || validZone(Intl.DateTimeFormat().resolvedOptions().timeZone) || 'America/Regina';
-let view = 'month';
+const initialEvent = byId('calendar-workspace').dataset;
+let view = initialEvent.eventStart ? 'day' : 'month';
 const currentDate = () => zonedLocal(Date.now(), zone).slice(0, 10);
 let selected = currentDate();
+if (initialEvent.eventStart) {
+  selected = initialEvent.eventAllDay === 'true'
+    ? initialEvent.eventStart
+    : zonedLocal(initialEvent.eventStart, zone).slice(0, 10);
+}
 let focusDate = selected;
 let events = [];
 let reminderEvents = [];

@@ -18,7 +18,12 @@ bp = Blueprint("calendar", __name__)
 
 @bp.get("/calendar")
 def page():
-    return render_template("calendar.html")
+    event_id = request.args.get("event", type=int)
+    selected_event = None
+    if event_id is not None and 0 < event_id <= 2**63 - 1 and student_storage_ready(CalendarEvent):
+        stored = db.session.get(CalendarEvent, event_id)
+        selected_event = stored.as_dict() if stored else None
+    return render_template("calendar.html", selected_event=selected_event)
 
 
 @bp.before_request

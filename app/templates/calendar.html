@@ -14,7 +14,7 @@
 {% endcall %}
 
 <p class="notice" id="calendar-change-status" role="status" hidden></p>
-<div class="calendar-layout" id="calendar-workspace">
+<div class="calendar-layout" id="calendar-workspace"{% if selected_event %} data-event-start="{{ selected_event.start }}" data-event-all-day="{{ 'true' if selected_event.all_day else 'false' }}"{% endif %}>
   <section class="card calendar-board" aria-labelledby="calendar-range-title">
     <header class="calendar-toolbar">
       <div class="calendar-period">

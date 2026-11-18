@@ -8,7 +8,7 @@
 {% block content %}
 <div class="syllabus-page">
   {% call page_heading('Syllabus import', 'Review dates from a syllabus before adding them to your calendar.') %}
-  <a class="button secondary" href="{{ request.script_root }}/calendar">{{ icon('planner', 18) }} Calendar</a>
+  <a class="button secondary" href="{{ url_for('calendar.page', course=prefill_course or none) }}">{{ icon('planner', 18) }} Calendar</a>
   {% endcall %}
 
   <div class="syllabus-intake">
@@ -52,6 +52,7 @@
       <div id="syllabus-candidates"></div>
       <div class="syllabus-approval-bar">
         <p id="syllabus-approval-message" role="status" tabindex="-1">Select the deadlines you want to import.</p>
+        <a id="syllabus-calendar-result" class="button secondary" href="{{ url_for('calendar.page') }}" hidden>View imported deadline {{ icon('arrow', 16) }}</a>
         <button id="syllabus-approve" type="submit" class="button primary" disabled>Add selected deadlines</button>
       </div>
     </form>

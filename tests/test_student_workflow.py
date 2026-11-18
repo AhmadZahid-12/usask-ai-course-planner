@@ -20,9 +20,18 @@ class StudentWorkflowTests(unittest.TestCase):
             with app.app_context():
                 upgrade_student_schema()
             client = app.test_client()
+            first_run = client.get("/").data
+            self.assertIn(b"Add your first course", first_run)
+            self.assertIn(b"/student/courses#personal-code", first_run)
+            self.assertLess(first_run.index(b"Upcoming deadlines"), first_run.index(b"Template progress"))
             created = client.post("/student/courses", data={"code": "cmpt141"})
             self.assertEqual(created.status_code, 303)
             course = created.headers["Location"]
+            self.assertNotIn(b"Add your first course", client.get("/").data)
+            duplicate = client.post("/student/courses", data={"code": "cmpt141", "title": "My title"})
+            self.assertEqual(duplicate.status_code, 422)
+            self.assertIn(b'value="cmpt141"', duplicate.data)
+            self.assertIn(b'value="My title"', duplicate.data)
             self.assertIn(b"/syllabus?course_code=CMPT+141", client.get(course).data)
 
             now = datetime.now(ZoneInfo("America/Regina"))
@@ -42,7 +51,11 @@ class StudentWorkflowTests(unittest.TestCase):
                 "events": [{**candidate, "timezone": "America/Regina"}],
             })
             self.assertEqual(approved.status_code, 200, approved.json)
-            self.assertEqual(len(approved.json["events"]), 1)
+            [event] = approved.json["events"]
+            event_page = f"/calendar?event={event['id']}"
+            self.assertIn(b'data-event-start="' + event["start"].encode() + b'"', client.get(event_page).data)
+            self.assertNotIn(b"data-event-start", client.get("/calendar?event=99999").data)
+            self.assertIn(event_page.encode(), client.get("/").data)
 
             rejected_note = client.post(course + "/notes", data={
                 "title": " ", "notes": "Draft notes I intend to keep",

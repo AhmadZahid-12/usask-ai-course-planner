@@ -21,8 +21,8 @@
   <aside class="card student-panel">
     <span class="badge eligible">{{ icon('spark', 14) }} Suggestion</span>
     <h2>What to work on</h2>
-    {% if suggestion %}<p>Review <strong>{{ suggestion.title }}</strong> first. It is the earliest saved deadline in this window.</p>
-    {% else %}<p class="muted">Add deadlines to your calendar to get a suggestion based on their order.</p>{% endif %}
+    {% if suggestion %}<p>Start with <strong><a class="agenda-suggestion-link" href="{{ url_for('calendar.page', event=suggestion.id) }}">{{ suggestion.title }}</a></strong>. It is the earliest saved deadline in this window.</p>
+    {% else %}<p class="muted">Add deadlines to get a suggestion based on what’s due next.</p>{% if ready %}<a class="text-link" href="{{ url_for('syllabus.upload_page') }}">Import a syllabus {{ icon('arrow', 15) }}</a>{% endif %}{% endif %}
   </aside>
 </div>
 {% endblock %}
