@@ -2,8 +2,8 @@
 {% from "components.html" import icon, page_heading %}
 {% block title %}Settings · USask Course Planner{% endblock %}
 {% block content %}
-{{ page_heading('Settings', 'Manage preferences for this browser.') }}
-<section class="card settings-card" aria-labelledby="appearance-title">
+{{ page_heading('Settings', 'Preferences for this browser.') }}
+<section class="rule-panel settings-card" aria-labelledby="appearance-title">
   <div class="settings-header"><span class="metric-icon eligible">{{ icon('sun', 18) }}</span><div><h2 id="appearance-title">Appearance</h2><p class="muted">Your choice is saved on this device.</p></div></div>
   <div class="setting-row"><label for="theme-select">Colour theme</label><select id="theme-select"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></div>
 </section>

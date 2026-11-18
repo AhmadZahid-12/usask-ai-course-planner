@@ -11,17 +11,17 @@
 {% if error %}<p class="notice error-text" role="alert">{{ error }}</p>{% endif %}
 {% set messages = {'notes': 'Notes saved.', 'material': 'Material added.', 'removed': 'Material removed.'} %}
 {% if request.args.get('saved') in messages %}<p class="notice" role="status">{{ messages[request.args.get('saved')] }}</p>{% endif %}
-<div class="student-layout">
+<div class="student-layout course-workspace">
   <div class="student-stack">
-    <section class="card student-panel" aria-labelledby="notes-title">
+    <section class="rule-panel student-panel notes-panel" aria-labelledby="notes-title">
       <h2 id="notes-title">Course notes</h2>
       <form action="{{ url_for('workspace.save_notes', course_id=course.id) }}" method="post" class="student-form">
         <label for="course-title-edit">Workspace title</label><input id="course-title-edit" name="title" maxlength="160" value="{{ note_form.title if note_form else course.title }}" required>
-        <label for="course-notes-edit">Notes</label><textarea id="course-notes-edit" name="notes" rows="7" maxlength="20000" placeholder="Add notes for your next class">{{ note_form.notes if note_form else course.notes }}</textarea>
+        <label for="course-notes-edit">Notes</label><textarea id="course-notes-edit" name="notes" rows="10" maxlength="20000" placeholder="Write your class notes here">{{ note_form.notes if note_form else course.notes }}</textarea>
         <button class="button primary" type="submit">Save notes</button>
       </form>
     </section>
-    <section class="card student-panel" aria-labelledby="materials-title">
+    <section class="rule-panel student-panel" aria-labelledby="materials-title">
       <h2 id="materials-title">Study materials</h2>
       <form method="get" class="inline-form material-search">
         <div><label for="material-query">Search saved files</label><input id="material-query" name="q" type="search" maxlength="100" value="{{ query }}" placeholder="Name or extracted text"></div>
@@ -44,7 +44,7 @@
       </form>
     </section>
   </div>
-  <aside class="card student-panel">
+  <aside class="rule-panel student-panel course-context">
     <h2>Course deadlines</h2><p class="muted">Next 90 days · Saskatchewan time</p>
     {% if deadlines %}{{ event_list(deadlines, true) }}{% else %}<p class="muted student-aside-empty">No upcoming deadlines are recorded for {{ course.code }}.</p>{% endif %}
     <a class="text-link" href="{{ catalogue }}">Official catalogue {{ icon('external', 15) }}</a>

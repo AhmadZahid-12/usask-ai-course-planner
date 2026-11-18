@@ -5,25 +5,36 @@
 {% block scripts %}<script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}
 {% block content %}
 <div class="dashboard-page">
-  {% call page_heading('Planning dashboard', 'See your deadlines and track your degree progress.') %}
+  {% call page_heading('Dashboard', 'Your calendar and course progress at a glance.') %}
   {% if student_navigation|default(false) and setup_course %}
   <a class="button primary" href="{{ url_for('workspace.courses') }}#personal-code">{{ icon('plus', 18) }} Add your first course</a>
-  {% else %}
-  <a class="button primary" href="{{ url_for('main.planner') }}">{{ icon('planner', 18) }} Open degree planner {{ icon('arrow', 17) }}</a>
   {% endif %}
   {% endcall %}
   {% if student_navigation|default(false) and calendar_ready %}
-  <section class="card dashboard-deadlines" aria-labelledby="dashboard-deadlines-title">
-    <header class="card-heading"><div><h2 id="dashboard-deadlines-title">Upcoming deadlines</h2><p>Next 14 days · Saskatchewan time</p></div><a class="button secondary" href="{{ url_for('calendar.page') }}">Calendar {{ icon('arrow', 15) }}</a></header>
-    {% if deadlines %}{{ event_list(deadlines, true) }}
-    {% else %}<p class="inline-message">No deadlines yet. <a href="{{ url_for('syllabus.upload_page') }}">Import a syllabus</a> or add an event in Calendar.</p>{% endif %}
-  </section>
+  <div class="daily-spread">
+    <section class="today-ledger" aria-labelledby="dashboard-today-title">
+      <header class="ledger-heading"><h2 id="dashboard-today-title">Today</h2><a class="text-link" href="{{ url_for('calendar.page') }}">Calendar {{ icon('arrow', 15) }}</a></header>
+      {% if today_events %}
+      {{ event_list(today_events, true) }}
+      {% if today_count > today_events|length %}<a class="text-link" href="{{ url_for('calendar.page') }}">See all {{ today_count }} events {{ icon('arrow', 15) }}</a>{% endif %}
+      {% else %}
+      <p class="agenda-empty">Nothing else scheduled today.</p>
+      <p class="muted"><a class="text-link" href="{{ url_for('syllabus.upload_page') }}">Import a syllabus {{ icon('arrow', 15) }}</a></p>
+      {% endif %}
+    </section>
+    <section class="dashboard-deadlines" aria-labelledby="dashboard-deadlines-title">
+      <header class="ledger-heading"><h2 id="dashboard-deadlines-title">Upcoming deadlines</h2><span class="muted">Next 14 days</span></header>
+      {% if deadlines %}{{ event_list(deadlines, true) }}
+      {% else %}<p class="muted agenda-empty">No later deadlines in this window.</p>{% endif %}
+    </section>
+  </div>
   {% endif %}
   <section class="card overview" aria-labelledby="progress-title">
     <div class="overview-main">
       <div class="overview-title">
         <span class="badge neutral">{{ icon('book', 14) }} Starter template</span>
         <h2 id="progress-title">BSc Computer Science</h2>
+        <a class="text-link" href="{{ url_for('main.planner') }}">Degree planner {{ icon('arrow', 15) }}</a>
       </div>
       <div class="progress-block">
         <div class="progress-reading"><strong id="template-percent">—</strong><div><span>Template progress</span><small id="template-count" class="muted">Loading saved plan…</small></div></div>
@@ -38,7 +49,7 @@
     </div>
   </section>
   <div class="dashboard-grid">
-    <section class="card course-panel" aria-labelledby="courses-title">
+    <section class="rule-panel course-panel" aria-labelledby="courses-title">
       <header class="card-heading"><div><h2 id="courses-title">Template courses</h2><p>USask Catalogue · latest saved progress</p></div><button id="check-status" class="button secondary" type="button" hidden>Check again</button></header>
       <p id="dashboard-message" class="inline-message" role="status">Loading course status…</p>
       <ul class="course-list" id="dashboard-courses">

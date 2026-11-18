@@ -7,11 +7,41 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from app import create_app
+from app.calendar_store import create_event
 from app.db import db
 from app.student_migrations import upgrade_student_schema
 
 
 class StudentWorkflowTests(unittest.TestCase):
+    def test_dashboard_shows_today_before_later_deadlines_without_duplicates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            uri = f"sqlite:///{Path(directory) / 'dashboard.db'}"
+            app = create_app({"TESTING": True, "SQLALCHEMY_DATABASE_URI": uri})
+            today = datetime.now(ZoneInfo("America/Regina")).date()
+            tomorrow = today + timedelta(days=1)
+            with app.app_context():
+                upgrade_student_schema()
+                for title, category, first in (
+                    ("Office hours", "class", today),
+                    ("Exam this morning", "exam", today),
+                    ("Next worksheet", "assignment", tomorrow),
+                    ("Later lecture", "class", tomorrow),
+                ):
+                    create_event({
+                        "title": title, "category": category, "all_day": True,
+                        "timezone": "America/Regina", "start": first.isoformat(),
+                        "end": (first + timedelta(days=1)).isoformat(),
+                    })
+                db.session.commit()
+
+            page = app.test_client().get("/").data.decode()
+            earlier, later = page.split('id="dashboard-deadlines-title"', 1)
+            self.assertIn("Office hours", earlier)
+            self.assertIn("Exam this morning", earlier)
+            self.assertNotIn("Exam this morning", later)
+            self.assertIn("Next worksheet", later)
+            self.assertNotIn("Later lecture", page)
+
     def test_approved_syllabus_connects_course_calendar_and_read_only_assistant(self):
         with tempfile.TemporaryDirectory() as directory:
             uri = f"sqlite:///{Path(directory) / 'workflow.db'}"

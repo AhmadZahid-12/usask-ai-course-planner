@@ -1,6 +1,6 @@
 const root = document.documentElement;
 const system = matchMedia('(prefers-color-scheme: light)');
-const mobile = matchMedia('(max-width: 760px)');
+const mobile = matchMedia('(max-width: 820px)');
 const navigation = document.querySelector('#mobile-navigation');
 const sidebar = document.querySelector('#sidebar-toggle');
 const themeSelect = document.querySelector('#theme-select');

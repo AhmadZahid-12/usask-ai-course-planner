@@ -39,15 +39,28 @@
 .material-list a:hover { text-decoration: underline; }
 .material-upload { padding-top: 12px; border-top: 1px solid var(--border); }
 .student-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-.student-tabs a { padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-weight: 600; }
-.student-tabs a[aria-current] { color: var(--accent); background: var(--accent-soft); }
+.student-tabs a { padding: 8px 10px; border-bottom: 2px solid transparent; font-weight: 600; }
+.student-tabs a[aria-current] { color: var(--accent); border-bottom-color: var(--accent); }
 .student-planning { margin-bottom: 15px; }
 .student-planning .button-group { margin-top: 10px; }
 #remove-material-dialog form { margin-top: 14px; }
 @media (max-width: 930px) { .student-layout { grid-template-columns: 1fr; } }
 
-.dashboard-deadlines { margin-bottom: var(--gap); }
-.dashboard-deadlines .student-events { padding-inline: 16px; }
-.dashboard-deadlines .inline-message a { color: var(--accent); text-decoration: underline; }
 .student-events strong a:hover { text-decoration: underline; }
 .agenda-suggestion-link { color: var(--accent); text-decoration: underline; }
+
+
+.student-layout { column-gap: clamp(20px, 4vw, 48px); }
+.student-stack { row-gap: 32px; }
+.rule-panel.student-panel { padding: 16px 0 0; }
+.rule-panel .student-course-list, .rule-panel .student-events { padding-inline: 0; }
+.notes-panel .student-form { margin-top: 18px; }
+.notes-panel input { max-width: 52ch; }
+.notes-panel textarea {
+  background: var(--surface);
+  line-height: 1.65;
+  padding: 14px 16px;
+}
+.material-empty { margin-block: 14px; }
+.course-context .event-mark { background: transparent; }
+.student-empty { padding-inline: 0; }

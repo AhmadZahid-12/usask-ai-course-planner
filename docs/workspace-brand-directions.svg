@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" role="img" aria-labelledby="title desc">
+  <title id="title">Three provisional Course Planner identities</title>
+  <desc id="desc">Meridian uses connected paths, Interval uses calendar ticks, and Margin uses offset writing lines.</desc>
+  <rect width="900" height="340" fill="#f8f5ee"/>
+  <text x="36" y="59" font-family="Georgia,serif" font-size="36" fill="#23232a">Course Planner identity studies</text>
+  <path d="M36 86h828M306 105v192M594 105v192" stroke="#dcd7cb"/>
+  <g transform="translate(36 116)">
+    <rect width="64" height="64" rx="12" fill="#3746bf"/>
+    <path d="M14 46V18h22v28h14M14 32h22" stroke="#fffaf1" stroke-width="4" fill="none"/>
+    <circle cx="36" cy="32" r="4.4" fill="#fffaf1"/>
+    <text y="114" font-family="Georgia,serif" font-size="30" fill="#23232a">Meridian</text>
+    <text y="145" font-family="system-ui,sans-serif" font-size="14" fill="#5c5a64">Academic paths meet</text>
+    <text y="174" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#3746bf">PROVISIONAL DIRECTION</text>
+  </g>
+  <g transform="translate(326 116)">
+    <rect width="64" height="64" rx="12" fill="#23534d"/>
+    <path d="M24 18H15v28h9m16-28h9v28h-9M24 32v7m8-14v14m8-10v10" stroke="#fffaf1" stroke-width="3" fill="none"/>
+    <text y="114" font-family="Georgia,serif" font-size="30" fill="#23232a">Interval</text>
+    <text y="145" font-family="system-ui,sans-serif" font-size="14" fill="#5c5a64">A window of time</text>
+  </g>
+  <g transform="translate(614 116)">
+    <rect width="64" height="64" rx="12" fill="#653d2f"/>
+    <path d="M43 14H24v30h24M16 22v28h24M30 25h16M30 33h12" stroke="#fffaf1" stroke-width="3" fill="none"/>
+    <text y="114" font-family="Georgia,serif" font-size="30" fill="#23232a">Margin</text>
+    <text y="145" font-family="system-ui,sans-serif" font-size="14" fill="#5c5a64">Room to think and write</text>
+  </g>
+</svg>

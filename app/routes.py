@@ -25,11 +25,14 @@ bp = Blueprint("main", __name__)
 @bp.route("/", methods=["GET"])
 def home():
     catalogue = starter_catalogue()
+    today = student_agenda(1)
+    today_ids = {event["id"] for event in today}
+    deadlines = [event for event in student_agenda(14, deadlines_only=True) if event["id"] not in today_ids]
     return render_template(
         "dashboard.html", courses=template_courses(), edition=catalogue["edition"],
         program_url=PROGRAM_URL, calendar_ready=student_storage_ready(CalendarEvent),
         setup_course=needs_course_setup(),
-        deadlines=student_agenda(14, deadlines_only=True)[:4],
+        today_events=today[:5], today_count=len(today), deadlines=deadlines[:4],
     )
 
 

@@ -7,12 +7,12 @@
 {% endblock %}
 {% block content %}
 <div class="syllabus-page">
-  {% call page_heading('Syllabus import', 'Review dates from a syllabus before adding them to your calendar.') %}
+  {% call page_heading('Syllabus import', 'Find deadlines and confirm them before adding them to Calendar.') %}
   <a class="button secondary" href="{{ url_for('calendar.page', course=prefill_course or none) }}">{{ icon('planner', 18) }} Calendar</a>
   {% endcall %}
 
   <div class="syllabus-intake">
-    <form id="syllabus-upload" class="card syllabus-upload" action="{{ url_for('syllabus.preview') }}" method="post" enctype="multipart/form-data">
+    <form id="syllabus-upload" class="rule-panel syllabus-upload" action="{{ url_for('syllabus.preview') }}" method="post" enctype="multipart/form-data">
       <div>
         <h2>Choose a syllabus</h2>
         <p class="muted">Text-based PDF or UTF-8 text, up to 4 MB.</p>
@@ -30,8 +30,7 @@
       </div>
       <p id="syllabus-upload-message" role="status" hidden></p>
     </form>
-    <aside class="card syllabus-guide" aria-labelledby="syllabus-guide-title">
-      <span class="syllabus-file-icon">{{ icon('check', 18) }}</span>
+    <aside class="rule-panel syllabus-guide" aria-labelledby="syllabus-guide-title">
       <h2 id="syllabus-guide-title">You approve each date</h2>
       <p>Check suggestions against the quoted syllabus text. Missing or tentative dates stay unconfirmed until you review them.</p>
       <p class="muted">The file is processed locally. Approved events keep a short source excerpt.</p>
@@ -60,7 +59,7 @@
 </div>
 
 <template id="syllabus-card">
-  <fieldset class="card syllabus-proposal">
+  <fieldset class="rule-panel syllabus-proposal">
     <legend class="visually-hidden"></legend>
     <div class="syllabus-proposal-head">
       <span class="badge syllabus-precision"></span>

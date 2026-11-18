@@ -2,10 +2,10 @@
 {% from "components.html" import icon, page_heading %}
 {% block title %}My courses · Student workspace{% endblock %}
 {% block content %}
-{{ page_heading('My courses', 'Keep your class notes, deadlines and study materials together.') }}
+{{ page_heading('My courses', 'Open a course to see its notes, deadlines and files.') }}
 {% if not ready %}<p class="notice" role="status">Course storage is disabled. Run the approved student migration to enable this workspace.</p>{% else %}
 <div class="student-layout">
-  <section class="card" aria-labelledby="enrolled-title">
+  <section class="rule-panel" aria-labelledby="enrolled-title">
     <header class="card-heading"><h2 id="enrolled-title">Course workspaces</h2><span class="badge neutral">{{ courses|length }} added</span></header>
     {% if courses %}
     <ul class="student-course-list">
@@ -17,7 +17,7 @@
     <div class="student-empty"><span class="metric-icon eligible">{{ icon('book', 18) }}</span><div><h3>Your courses will appear here</h3><p class="muted">Add a course to start a workspace.</p></div></div>
     {% endif %}
   </section>
-  <section class="card student-panel" aria-labelledby="add-course-title">
+  <section class="rule-panel student-panel add-course-panel" aria-labelledby="add-course-title">
     <h2 id="add-course-title">Add a course</h2>
     {% if error %}<p class="feedback-error" role="alert">{{ error }}</p>{% endif %}
     <form method="post" class="student-form">

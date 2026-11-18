@@ -6,7 +6,7 @@
 <nav class="navigation" aria-label="Workspace">
   {% for endpoint, label, glyph in pages %}
   {% set active = current == endpoint %}
-  <a class="nav-link" href="{{ url_for(endpoint) }}" title="{{ label }}"{% if active %} aria-current="page"{% endif %}>{{ icon(glyph, 18) }}<span>{{ label }}</span></a>
+  <a class="nav-link{% if endpoint in ['main.explorer', 'main.settings'] %} nav-section-start{% endif %}" href="{{ url_for(endpoint) }}" title="{{ label }}"{% if active %} aria-current="page"{% endif %}>{{ icon(glyph, 18) }}<span>{{ label }}</span></a>
   {% endfor %}
 </nav>
 {% endmacro %}
@@ -24,6 +24,7 @@
     } catch {}
   </script>
   <link rel="preload" href="{{ url_for('static', filename='fonts/inter-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="{{ url_for('static', filename='workspace-mark.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   {% if student_navigation|default(false) %}<link rel="stylesheet" href="{{ url_for('static', filename='student.css') }}">{% endif %}
   <script type="module" src="{{ url_for('static', filename='js/shell.js') }}"></script>
@@ -33,7 +34,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="app-shell">
   <aside class="sidebar" id="desktop-sidebar">
-    <a class="brand" href="{{ url_for('main.home') }}" aria-label="USask AI Course Planner">{{ icon('book', 19) }}<span><strong>Course Planner</strong><small>USask workspace</small></span></a>
+    <a class="brand" href="{{ url_for('main.home') }}" aria-label="USask AI Course Planner"><img src="{{ url_for('static', filename='workspace-mark.svg') }}" width="28" height="28" alt=""><span><strong>Course Planner</strong><small>USask workspace</small></span></a>
     {{ navigation() }}
     <div class="sidebar-footer"><a class="nav-link" title="Official USask Catalogue" href="https://catalogue.usask.ca/">{{ icon('external', 17) }}<span>USask Catalogue</span></a></div>
   </aside>

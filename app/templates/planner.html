@@ -3,13 +3,13 @@
 {% block title %}Degree Planner · USask Course Planner{% endblock %}
 {% block scripts %}<script type="module" src="{{ url_for('static', filename='js/planner.js') }}"></script>{% endblock %}
 {% block content %}
-{% call page_heading('Degree Planner', 'Record completed courses and arrange your next terms.') %}
+{% call page_heading('Degree Planner', 'Track completed courses and plan your next terms.') %}
 <div class="button-group"><a class="button secondary" href="#plan-tools">Plan files</a><button id="save-plan" class="button primary" type="button" disabled>{{ icon('check', 17) }} Save progress</button></div>
 {% endcall %}
 <p class="notice" id="plan-feedback" role="status">Loading your latest saved plan…</p>
 <div class="planner-grid">
   <div class="planner-workspace">
-  <section class="card course-panel">
+  <section class="rule-panel course-panel">
     <header class="card-heading"><div><h2>Completed courses</h2><p>Computer Science starter template · <span id="planner-progress">0 of {{ courses|length }}</span></p></div><span class="badge neutral">Starter</span></header>
     <ul class="checklist" id="completion-list">
       {% for code, course in courses.items() %}
@@ -25,7 +25,7 @@
     </div>
   </section>
 
-<section class="card terms-card">
+<section class="rule-panel terms-card">
   <header class="card-heading"><div><h2>Semester draft</h2><p>Terms run in the order shown and are saved in this browser.</p></div><button id="check-sequence" class="button secondary" type="button">Check sequence</button></header>
   <div class="terms-body">
     <p id="sequence-message" class="muted" role="status">Check prerequisites against completed courses and earlier terms.</p>
@@ -35,7 +35,7 @@
   </div>
 </section>
   </div>
-  <section class="card detail-card plan-settings" id="plan-tools" tabindex="-1">
+  <section class="rule-panel plan-settings" id="plan-tools" tabindex="-1">
     <h2>Saved progress</h2>
     <label for="plan-name">Plan name</label><input id="plan-name" value="My Plan" maxlength="120" disabled>
     <label for="plan-notes">Notes</label><textarea id="plan-notes" rows="4" placeholder="Add notes for your next planning session" disabled></textarea>

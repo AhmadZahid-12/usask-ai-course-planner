@@ -4,8 +4,8 @@
 {% block scripts %}<script type="module" src="{{ url_for('static', filename='js/explorer.js') }}"></script>{% endblock %}
 {% block content %}
 <div id="explorer-workspace" class="explorer-workspace">
-  <div class="explorer-heading">{{ page_heading('Course Explorer', 'Browse course records and check prerequisites against your saved progress.') }}</div>
-  <section class="card filters" aria-label="Course search">
+  <div class="explorer-heading">{{ page_heading('Course Explorer', 'Find courses and check prerequisites against your saved progress.') }}</div>
+  <section class="filters search-controls" aria-label="Course search">
     <form id="lookup-form" class="filter-form">
       <div class="filter-search"><label for="course-search">Course title or code</label><div class="search-field">{{ icon('search', 18) }}<input id="course-search" type="search" value="{{ request.args.get('q', '') }}" placeholder="Search courses" maxlength="100" autocomplete="off" aria-describedby="search-hint"></div></div>
       <div><label for="course-level">Level</label><select id="course-level"><option value="">All levels</option>{% for level in range(1, 10) %}<option value="{{ level }}">{{ level }}00 level</option>{% endfor %}</select></div>
@@ -16,8 +16,8 @@
     <p id="lookup-error" class="feedback-error" role="alert" hidden></p>
   </section>
   <div class="detail-grid">
-    <section class="card results-panel" aria-labelledby="results-heading">
-      <header class="card-heading"><div><h2 id="results-heading">Catalogue matches</h2><p id="result-count" role="status"></p></div></header>
+    <section class="rule-panel results-panel" aria-labelledby="results-heading">
+      <header class="card-heading"><div><h2 id="results-heading">Results</h2><p id="result-count" role="status"></p></div></header>
       <div id="search-results" class="course-list"></div>
       <div class="card-actions" id="more-results" hidden><button id="show-more" class="button secondary" type="button">Show more</button></div>
     </section>

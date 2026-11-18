@@ -3,7 +3,7 @@
 {% from "student_events.html" import event_list %}
 {% block title %}{{ title }} · Planning assistant{% endblock %}
 {% block content %}
-{% call page_heading(title, 'A read-only view of your saved calendar. Times are shown in Saskatchewan time.') %}
+{% call page_heading(title, 'Saved calendar events · Saskatchewan time') %}
 <a class="button secondary" href="{{ url_for('calendar.page') }}">Open calendar {{ icon('arrow', 16) }}</a>
 {% endcall %}
 <nav class="student-tabs" aria-label="Planning window">
@@ -12,13 +12,13 @@
   {% endfor %}
 </nav>
 <div class="student-layout">
-  <section class="card">
+  <section class="rule-panel">
     <header class="card-heading"><div><h2>Confirmed calendar entries</h2><p>From your saved events</p></div></header>
     {% if not ready %}<p class="inline-message">Calendar storage is disabled until the student migration is approved and run.</p>
     {% elif events %}{{ event_list(events) }}
     {% else %}<p class="inline-message">There are no saved events in this window.</p>{% endif %}
   </section>
-  <aside class="card student-panel">
+  <aside class="rule-panel student-panel">
     <span class="badge eligible">{{ icon('spark', 14) }} Suggestion</span>
     <h2>What to work on</h2>
     {% if suggestion %}<p>Start with <strong><a class="agenda-suggestion-link" href="{{ url_for('calendar.page', event=suggestion.id) }}">{{ suggestion.title }}</a></strong>. It is the earliest saved deadline in this window.</p>
