@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 
 from app.planner import normalize_code as normalize_course_code
 
-CATALOGUE_BASE = "https://catalogue.usask.ca"
+from app.institutions.usask import catalogue_url
 
 CACHE_DIR = Path(__file__).resolve().parent / ".cache"
 CACHE_DIR.mkdir(exist_ok=True)
@@ -70,8 +70,7 @@ def _write_cache(course_code: str, payload: Dict[str, Any]) -> None:
 
 def course_url(course_code: str) -> str:
     """Generate catalogue URL from course code"""
-    slug = normalize_course_code(course_code).replace(" ", "-")
-    return f"{CATALOGUE_BASE}/{slug}"
+    return catalogue_url(normalize_course_code(course_code))
 
 
 # Extraction

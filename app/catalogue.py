@@ -1,26 +1,12 @@
 """Public catalogue metadata and course details for the workspace."""
 
 import json
-from functools import cache
-from pathlib import Path
 
+from app.institutions.usask import cmpt_catalogue, starter_catalogue
 from app.models import CourseCache, Plan
 from app.planner import COURSE_RE, classify_courses, extract_prereq_line, normalize_code
 from app.scraper import course_url, get_cached_course
 from app.services import get_or_scrape_course
-
-DATA_DIR = Path(__file__).resolve().parent / "degree"
-
-
-@cache
-def starter_catalogue() -> dict:
-    return json.loads((DATA_DIR / "starter_catalogue.json").read_text(encoding="utf-8"))
-
-
-@cache
-def cmpt_catalogue() -> dict:
-    return json.loads((DATA_DIR / "cmpt_catalogue.json").read_text(encoding="utf-8"))
-
 
 def available_courses() -> list[dict]:
     indexed = cmpt_catalogue()["courses"]
