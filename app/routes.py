@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, Response, render_template, request, jsonify
 import json
 from pathlib import Path
 
@@ -7,10 +7,9 @@ from app.scraper import get_course_raw_info
 
 from app.db import db
 from app.models import Plan
-from app.planner import unlocked_courses, locked_courses_with_reasons, normalize_code
+from app.planner import normalize_code
 
 from app.services import (
-    build_degree_course_map,
     bulk_scrape_courses,
     planner_status,
 )
@@ -105,15 +104,23 @@ def api_courses_bulk_scrape():
 
 @bp.route("/api/planner/status", methods=["POST"])
 def api_planner_status():
-    payload = request.get_json(silent=True) or {}
+    return _planner_status_response()
+
+
+def _planner_status_response(*, legacy: bool = False) -> Response | tuple[Response, int]:
+    payload = request.get_json(silent=True)
+    if payload is None:
+        payload = {}
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Expected a JSON object"}), 400
+
     completed = payload.get("completed", [])
-    completed_set = {normalize_code(c) for c in completed}
+    if not isinstance(completed, list) or not all(isinstance(code, str) for code in completed):
+        return jsonify({"error": "Completed courses must be a list of course-code strings"}), 400
 
     degree = json.loads(DEFAULT_DEGREE_FILE.read_text(encoding="utf-8"))
-    required = [normalize_code(c) for c in degree.get("required_courses", [])]
-
-    status = planner_status(required, completed_set)
-    return jsonify(status)
+    required = degree.get("required_courses", [])
+    return jsonify(planner_status(required, set(completed), legacy=legacy))
 
 
 # Keep the old endpoint so older clients/UI don't break.
@@ -131,26 +138,7 @@ def api_planner_unlocked():
             405,
         )
 
-    payload = request.get_json(silent=True) or {}
-    completed = payload.get("completed", [])
-    completed_set = {normalize_code(c) for c in completed}
-
-    degree = json.loads(DEFAULT_DEGREE_FILE.read_text(encoding="utf-8"))
-    required = [normalize_code(c) for c in degree.get("required_courses", [])]
-
-    course_map = build_degree_course_map(required)
-
-    unlocked = unlocked_courses(course_map, completed_set)
-    locked = locked_courses_with_reasons(course_map, completed_set)
-
-    return jsonify(
-        {
-            "required_count": len(required),
-            "completed_count": len(completed_set),
-            "unlocked": unlocked,
-            "locked": locked,
-        }
-    )
+    return _planner_status_response(legacy=True)
 
 
 # ---------------------------

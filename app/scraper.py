@@ -15,6 +15,8 @@ from typing import Any, Dict, Optional
 import requests
 from bs4 import BeautifulSoup
 
+from app.planner import normalize_code as normalize_course_code
+
 CATALOGUE_BASE = "https://catalogue.usask.ca"
 
 CACHE_DIR = Path(__file__).resolve().parent / ".cache"
@@ -43,16 +45,6 @@ def _write_cache(course_code: str, payload: Dict[str, Any]) -> None:
     payload = dict(payload)
     payload["saved_at"] = time.time()
     _cache_path(course_code).write_text(json.dumps(payload, indent=2))
-
-
-# Helpers
-def normalize_course_code(code: str) -> str:
-    """Normalize course code to format: 'CMPT 214'"""
-    code = (code or "").strip().upper()
-    m = re.match(r"^([A-Z]{2,5})\s*([0-9]{2,4}[A-Z]?)$", code.replace(" ", ""))
-    if m:
-        return f"{m.group(1)} {m.group(2)}"
-    return code
 
 
 def course_url(course_code: str) -> str:
