@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-
-<!-- Setting a title through the 'block' command -->
-{% block title %}About • USask AI Course Planner{% endblock %}
-
-<!-- Setting up the 'about' content page-->
+{% from "components.html" import page_heading %}
+{% block title %}About · USask Course Planner{% endblock %}
 {% block content %}
-<h1>About</h1>
-<p>This tool will summarize USask CS courses and help plan electives using AI.</p>
+{{ page_heading('About Course Planner', 'A local workspace for exploring and planning USask courses.') }}
+<section class="card detail-card">
+  <h2>Official information</h2>
+  <p>The starter template illustrates course planning. Use the official catalogue to confirm program requirements and enrolment information.</p>
+  <a class="text-link" href="https://catalogue.usask.ca/">USask Course Catalogue</a>
+</section>
 {% endblock %}
-

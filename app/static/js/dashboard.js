@@ -8,6 +8,7 @@ const retry = element('check-status');
 async function refresh() {
   retry.hidden = true;
   message.hidden = false;
+  element('dashboard-courses').setAttribute('aria-busy', 'true');
   message.textContent = 'Checking your saved plan and catalogue prerequisites…';
   let completed = new Set();
   let planLoaded = false;
@@ -36,6 +37,8 @@ async function refresh() {
     for (const row of rows) paintBadge(row.querySelector('.row-status'), eligibility(null, completed, row.dataset.code));
     message.textContent = planLoaded ? 'Course status is temporarily unavailable.' : 'Your saved plan could not be loaded.';
     retry.hidden = false;
+  } finally {
+    element('dashboard-courses').setAttribute('aria-busy', 'false');
   }
 }
 

@@ -150,7 +150,7 @@ export function mountTerms({courseCode, confirmChange, getCompleted}) {
       if (controller.signal.aborted) return;
       checks = result.terms;
       render();
-      message.textContent = 'Checked against completed courses and earlier draft terms. Open uncached courses in Course Explorer to check their rules.';
+      message.textContent = 'Assumes earlier draft courses will be completed. Open uncached courses in Course Explorer to check their rules.';
     } catch (error) {
       if (!controller.signal.aborted) message.textContent = error.message;
     } finally {

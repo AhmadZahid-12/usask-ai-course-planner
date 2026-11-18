@@ -138,7 +138,10 @@ def scrape_course_page(course_code: str) -> Dict[str, Any]:
     heading = soup.select_one("h1")
     title = soup.select_one("h1 + .lead")
     units = None
-    if heading and normalize_course_code(heading.get_text(" ", strip=True)) == normalize_course_code(course_code):
+    matched_page = bool(
+        heading and normalize_course_code(heading.get_text(" ", strip=True)) == normalize_course_code(course_code)
+    )
+    if matched_page:
         credit = re.search(r"\.(\d+)$", heading.get_text(" ", strip=True))
         units = int(credit[1]) if credit else None
     else:
@@ -147,11 +150,11 @@ def scrape_course_page(course_code: str) -> Dict[str, Any]:
     return {
         "course_code": normalize_course_code(course_code),
         "source_url": url,
-        "raw_text": desc[:6000],
+        "raw_text": desc[:6000] if matched_page else "",
         "title": title.get_text(" ", strip=True) if title else None,
         "credit_units": units,
         "retrieved": datetime.now(timezone.utc).date().isoformat(),
-        "not_found": not bool(desc),
+        "not_found": not matched_page or not bool(desc),
     }
 
 

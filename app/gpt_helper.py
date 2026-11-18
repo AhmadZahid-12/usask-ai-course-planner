@@ -5,6 +5,7 @@ from openai import OpenAI
 import os
 
 _client = None
+SUMMARY_UNAVAILABLE = "Sorry could not generate a summary right now. Please Try again in a minute."
 # Grabs the clients name
 def _get_client():
     global _client
@@ -57,7 +58,7 @@ def summarize_course(course_code: str, desc: str | None = None) -> str:
         # Takes the first gpt response and strips any white spaces or extra lines
         return resp.choices[0].message.content.strip()
     # For the odd reason if gpt crashes
-    except Exception as e:
-        return "Sorry could not generate a summary right now. Please Try again in a minute."
+    except Exception:
+        return SUMMARY_UNAVAILABLE
 
 

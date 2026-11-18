@@ -38,9 +38,10 @@
 <section class="card terms-card">
   <header class="card-heading"><div><h2>Semester draft</h2><p>Terms run in the order shown and are saved in this browser.</p></div><button id="check-sequence" class="button secondary" type="button">Check sequence</button></header>
   <div class="terms-body">
-    <p id="sequence-message" class="muted" role="status">Check prerequisites against completed courses and earlier terms. Official class times are not checked.</p>
+    <p id="sequence-message" class="muted" role="status">Check prerequisites against completed courses and earlier terms.</p>
     <div id="terms"></div>
     <form id="term-form" class="inline-form"><div><label for="term-name">New term name</label><input id="term-name" maxlength="45" placeholder="e.g. Fall 2027" required></div><button type="submit" class="button secondary">{{ icon('plus', 15) }} Add term</button></form>
+    <a class="text-link" href="https://pawnss.usask.ca/ban/bwckschd.p_disp_dyn_sched">Check class times in USask Class Search {{ icon('external', 15) }}</a>
   </div>
 </section>
 <dialog id="import-dialog" aria-labelledby="import-title">

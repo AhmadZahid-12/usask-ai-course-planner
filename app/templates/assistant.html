@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "components.html" import icon, page_heading %}
+{% block title %}AI Assistant · USask Course Planner{% endblock %}
+{% block scripts %}<script type="module" src="{{ url_for('static', filename='js/assistant.js') }}"></script>{% endblock %}
+{% block content %}
+{{ page_heading('AI Assistant', 'Read official course information and, when configured, generate a short explanation.') }}
+<section class="card filters">
+  <form id="assistant-form" class="inline-form assistant-form" action="{{ url_for('main.summarize_course') }}" method="post">
+    <div><label for="assistant-course">Course code</label><input id="assistant-course" name="course_code" maxlength="20" value="{{ code }}" placeholder="e.g. CMPT 141" required autocomplete="off"></div>
+    <button class="button {{ 'secondary' if ai_enabled else 'primary' }}" type="submit" name="action" value="lookup">{{ icon('search', 17) }} Look up official entry</button>
+    {% if ai_enabled %}<button class="button primary" type="submit" name="action" value="generate">{{ icon('spark', 17) }} Generate summary</button>{% endif %}
+  </form>
+  <p id="assistant-message" class="muted" role="status">{% if ai_enabled %}Summaries use the official entry. Course lookup works by itself.{% else %}AI summaries are disabled. Official course lookup is available.{% endif %}</p>
+</section>
+{% if error %}<p class="notice error-text" role="alert">{{ error }}</p>{% endif %}
+{% if official or summary or source_url %}
+<div class="assistant-grid">
+  <section class="card detail-card">
+    <div class="detail-meta"><span class="badge complete">{{ icon('check', 14) }} Official catalogue</span>{% if retrieved %}<span class="muted">Retrieved {{ retrieved }}</span>{% endif %}</div>
+    <h2>{{ code }}</h2>
+    {% if official %}<p class="course-text">{{ official }}</p>{% endif %}
+    <a class="text-link" href="{{ source_url }}">Open the USask course entry {{ icon('external', 15) }}</a>
+  </section>
+  {% if summary %}
+  <section class="card detail-card">
+    <div class="detail-meta"><span class="badge review">{{ icon('spark', 14) }} AI-generated explanation</span></div>
+    <h2>Course summary</h2><p class="course-text">{{ summary }}</p>
+    <p class="muted detail-meta">Verify requirements and term availability in the official sources.</p>
+  </section>
+  {% endif %}
+</div>
+{% else %}
+<section class="card detail-card assistant-empty"><span class="metric-icon eligible">{{ icon('book', 18) }}</span>
+  <div><h2>Look up a course to get started</h2><p class="muted">Use a course code or find one in Course Explorer.</p><a class="text-link" href="{{ url_for('main.explorer') }}">Browse Course Explorer {{ icon('arrow', 15) }}</a></div>
+</section>
+{% endif %}
+{% endblock %}

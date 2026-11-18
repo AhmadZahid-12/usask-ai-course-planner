@@ -12,10 +12,15 @@ export async function api(path, body, options = {}) {
   return data;
 }
 
+export function courseCode(value) {
+  const match = value.trim().toUpperCase().match(/^([A-Z]{2,5})[\s-]*(\d{2,4}[A-Z]?)(?:\.\d+)?$/);
+  return match ? `${match[1]} ${match[2]}` : '';
+}
+
 export function completedCourses(plan) {
   try {
     const courses = JSON.parse(plan?.completed_json || '[]');
-    return new Set(Array.isArray(courses) ? courses.filter(code => typeof code === 'string') : []);
+    return new Set(Array.isArray(courses) ? courses.filter(code => typeof code === 'string').map(code => courseCode(code) || code) : []);
   } catch { return new Set(); }
 }
 

@@ -74,6 +74,7 @@ def course_detail(code: str, completed: set[str]) -> dict:
         "prerequisites": extract_prereq_line(description) if not unavailable else None,
         "prerequisite_groups": record["prereqs"],
         "retrieved": record.get("retrieved"),
+        "cached": record.get("from_db", False),
         "status": status,
         "registration_note": locked[0].get("reason") if locked else None,
         "missing": locked[0]["missing"] if locked else [],

@@ -56,3 +56,20 @@ class CatalogueTests(unittest.TestCase):
         self.assertEqual(course["credit_units"], 4)
         self.assertEqual(course["title"], "Calculus")
         self.assertEqual(course["raw_text"], "Description from the catalogue.")
+
+    @patch("app.scraper.requests.get")
+    def test_redirected_or_mismatched_page_is_unavailable(self, fetch):
+        fetch.return_value = Mock(status_code=200, text="""
+            <h1>CMPT 141.3</h1><p class="lead">Computer Science</p>
+            <section id="Description"><p>Other course description.</p></section>
+        """)
+        result = scrape_course_page("MATH 133")
+        self.assertTrue(result["not_found"])
+        self.assertEqual(result["raw_text"], "")
+
+    @patch("app.routes.bulk_scrape_courses", return_value={"requested": 1})
+    def test_bulk_endpoint_keeps_valid_payload_and_rejects_non_course_values(self, bulk):
+        result = self.client.post("/api/courses/bulk_scrape", json={"codes": [None, "", "cmpt141.3"]})
+        self.assertEqual(result.get_json(), {"requested": 1})
+        bulk.assert_called_once_with(["CMPT 141"])
+        self.assertEqual(self.client.post("/api/courses/bulk_scrape", json={"codes": [7]}).status_code, 400)

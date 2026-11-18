@@ -256,3 +256,15 @@ dialog::backdrop { background: #090e16b5; }
 .dialog-form button { justify-self: end; }
 #confirm-dialog .button-group { justify-content: end; margin-top: 14px; }
 @media (max-width: 930px) { .planner-grid { grid-template-columns: 1fr; } }
+
+.assistant-form > div { flex: 1 1 175px; }
+.assistant-form > div input { width: 100%; }
+.assistant-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); align-items: start; gap: 16px; }
+.assistant-empty { display: flex; gap: 13px; }
+.assistant-empty h2 { margin-top: 0; }
+
+.course-list[aria-busy="true"] .row-status { background: var(--raised); }
+@media (prefers-reduced-motion: no-preference) {
+  .course-list[aria-busy="true"] .row-status { animation: status-loading 1.25s ease-in-out infinite alternate; }
+  @keyframes status-loading { to { opacity: .66; } }
+}

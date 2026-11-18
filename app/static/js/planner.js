@@ -1,4 +1,4 @@
-import { api, completedCourses, eligibility, paintBadge } from './api.js';
+import { api, completedCourses, courseCode, eligibility, paintBadge } from './api.js';
 import { mountTerms } from './terms.js';
 
 const el = id => document.getElementById(id);
@@ -20,11 +20,6 @@ let statusDelay;
 function notify(message, error = false) {
   feedback.textContent = message;
   feedback.classList.toggle('error-text', error);
-}
-
-function courseCode(value) {
-  const match = value.trim().toUpperCase().match(/^([A-Z]{2,5})[\s-]*(\d{2,4}[A-Z]?)(?:\.\d+)?$/);
-  return match ? `${match[1]} ${match[2]}` : '';
 }
 
 function confirmChange(message, button) {
@@ -92,7 +87,7 @@ function progressChanged() {
 function populate(plan) {
   name.value = plan?.name || 'My Plan';
   notes.value = plan?.notes || '';
-  completed = new Set([...completedCourses(plan)].map(code => courseCode(code) || code));
+  completed = completedCourses(plan);
   dirty = false;
   renderProgress();
   invalidateSequence();

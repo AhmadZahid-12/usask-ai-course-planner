@@ -1,9 +1,10 @@
 from flask import Blueprint, Response, render_template, request, jsonify
 import json
+import os
 from pathlib import Path
 
-from app.gpt_helper import summarize_course
-from app.scraper import get_course_raw_info
+from app.gpt_helper import SUMMARY_UNAVAILABLE, summarize_course
+from app.scraper import course_url, get_course_raw_info
 
 from app.catalogue import available_courses, cmpt_catalogue, course_detail, latest_completed, starter_catalogue
 from app.db import db
@@ -17,7 +18,6 @@ from app.services import (
 )
 
 bp = Blueprint("main", __name__)
-DEBUG_SCRAPE = True  # set False later
 
 DEGREE_DIR = Path(__file__).resolve().parent / "degree"
 DEFAULT_DEGREE_FILE = DEGREE_DIR / "bsc_cs.json"
@@ -48,7 +48,13 @@ def api_catalogue_course():
 
 @bp.get("/assistant")
 def assistant():
-    return render_template("index.html", summary=None)
+    return _assistant_page(code=request.args.get("code", ""))
+
+
+def _assistant_page(**context):
+    return render_template(
+        "assistant.html", ai_enabled=bool(os.getenv("OPENAI_API_KEY", "").strip()), **context,
+    )
 
 
 @bp.get("/settings")
@@ -77,43 +83,30 @@ def template_courses() -> dict:
 
 @bp.route("/summarize", methods=["POST"], endpoint="summarize_course")
 def summarize_course_route():
-    code = (request.form.get("course_code") or "").strip()
-    if not code:
-        return render_template("index.html", summary="No course code provided.")
+    code = normalize_code(request.form.get("course_code"))
+    if not COURSE_RE.fullmatch(code):
+        return _assistant_page(code=code, error="Enter a course code such as CMPT 141.")
 
     raw = get_course_raw_info(code)
+    official = (raw.get("raw_text") or "").strip()
+    context = {
+        "code": code,
+        "source_url": course_url(code),
+        "retrieved": raw.get("retrieved"),
+        "official": official,
+    }
+    if raw.get("not_found") or not official:
+        context["official"] = ""
+        return _assistant_page(**context, error="Could not load the official course entry. Try the catalogue link.")
 
-    official_text = (raw.get("raw_text") or "").strip()
-    source_url = raw.get("source_url")
-    from_cache = raw.get("from_cache", False)
-    not_found = raw.get("not_found", False)
+    action = request.form.get("action", "generate")
+    if action == "generate" and os.getenv("OPENAI_API_KEY", "").strip():
+        summary = summarize_course(code, desc=official)
+        if summary == SUMMARY_UNAVAILABLE or not summary:
+            return _assistant_page(**context, error="The AI summary is unavailable. The official entry is below.")
+        return _assistant_page(**context, summary=summary)
 
-    if DEBUG_SCRAPE:
-        print("\n================ SCRAPE DEBUG ================")
-        print("Input:", code)
-        print("Normalized:", raw.get("course_code"))
-        print("URL:", source_url)
-        print("From cache:", from_cache)
-        print("Not found:", not_found)
-        print("Official text preview:\n", official_text[:1200])
-        print("=============================================\n")
-
-    if not_found or not official_text:
-        summary = "I couldn't find official details for this course on the page I scraped."
-        return render_template(
-            "index.html",
-            summary=summary,
-            source_url=source_url,
-            from_cache=from_cache,
-        )
-
-    summary = summarize_course(raw.get("course_code", code), desc=official_text)
-    return render_template(
-        "index.html",
-        summary=summary,
-        source_url=source_url,
-        from_cache=from_cache,
-    )
+    return _assistant_page(**context)
 
 
 # ---------------------------
@@ -131,13 +124,17 @@ def api_degree_bsci_cs():
 
 @bp.route("/api/courses/bulk_scrape", methods=["POST"])
 def api_courses_bulk_scrape():
-    payload = request.get_json(silent=True) or {}
-    codes = payload.get("codes", [])
-    codes = [normalize_code(c) for c in codes if (c or "").strip()]
-    if not codes:
+    payload = request.get_json(silent=True)
+    codes = payload.get("codes", []) if isinstance(payload, dict) else []
+    if not isinstance(codes, list) or any(code is not None and not isinstance(code, str) for code in codes):
+        return jsonify({"error": "Provide a list of course-code strings."}), 400
+    normalized = [normalize_code(code) for code in codes if code and code.strip()]
+    if not normalized:
         return jsonify({"error": "No codes provided"}), 400
+    if not all(COURSE_RE.fullmatch(code) for code in normalized):
+        return jsonify({"error": "Enter course codes such as CMPT 141."}), 400
 
-    result = bulk_scrape_courses(codes)
+    result = bulk_scrape_courses(normalized)
     return jsonify(result)
 
 
@@ -278,8 +275,6 @@ def api_plan_export():
 @bp.route("/api/plan/import", methods=["POST"])
 def api_plan_import():
     payload = request.get_json(silent=True)
-    if payload is None:
-        payload = {}
     try:
         name, completed, notes = _plan_fields(payload, "Imported Plan")
     except ValueError as error:

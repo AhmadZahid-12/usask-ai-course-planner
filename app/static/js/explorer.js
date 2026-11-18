@@ -1,4 +1,4 @@
-import { api, paintBadge } from './api.js';
+import { api, courseCode, paintBadge } from './api.js';
 
 const el = id => document.getElementById(id);
 const index = JSON.parse(el('course-index').textContent);
@@ -48,8 +48,8 @@ function render() {
 
 async function lookup(value, focus) {
   pending?.abort();
-  const code = value.trim().toUpperCase().replace(/-/g, ' ');
-  if (!/^[A-Z]{2,5}\s*\d{2,4}[A-Z]?(?:\.\d+)?$/.test(code)) {
+  const code = courseCode(value);
+  if (!code) {
     message.hidden = false;
     el('detail-content').hidden = true;
     detail.setAttribute('aria-busy', 'false');
@@ -84,7 +84,7 @@ async function lookup(value, focus) {
         ? 'No explicit prerequisite was listed in the retrieved description.'
         : 'Check the official entry for the complete requirements.');
     el('detail-source').href = data.source_url;
-    el('detail-retrieved').textContent = data.retrieved ? ` · Retrieved ${data.retrieved}` : '';
+    el('detail-retrieved').textContent = data.retrieved ? ` · Retrieved ${data.retrieved}` : (data.cached ? ' · Cached description' : '');
     el('detail-assistant').href = `/assistant?code=${encodeURIComponent(data.code)}`;
     const page = new URL(location.href);
     page.searchParams.set('q', data.code);
