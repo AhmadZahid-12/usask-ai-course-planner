@@ -3,6 +3,8 @@ from flask import Flask, abort, request
 from app.db import db
 from app.routes import bp as main_bp
 
+STUDENT_BLUEPRINTS = {"calendar", "syllabus", "workspace"}
+
 
 def create_app(config: dict | None = None):
     from app.calendar_routes import bp as calendar_bp
@@ -28,7 +30,7 @@ def create_app(config: dict | None = None):
 
     @app.before_request
     def protect_student_mutations():
-        if request.blueprint not in {"calendar", "syllabus", "workspace"}:
+        if request.blueprint not in STUDENT_BLUEPRINTS:
             return None
         if request.method not in {"POST", "PATCH", "PUT", "DELETE"}:
             return None
@@ -38,5 +40,12 @@ def create_app(config: dict | None = None):
         ):
             abort(403)
         return None
+
+    @app.after_request
+    def protect_student_responses(response):
+        if request.blueprint in STUDENT_BLUEPRINTS or request.endpoint == "main.home":
+            response.headers["Cache-Control"] = "private, no-store"
+            response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
 
     return app

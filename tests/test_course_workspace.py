@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from app import create_app
-from app.db import db
 from app.student_migrations import upgrade_student_schema
 
 
@@ -63,3 +62,11 @@ class CourseWorkspaceTests(unittest.TestCase):
             "/student/courses", data={"code": "CMPT 141"}, headers={"Origin": "https://other.example"}
         )
         self.assertEqual(response.status_code, 403)
+
+    def test_personal_workspace_pages_disable_response_caching(self):
+        course = self.add_course()
+        for path in ("/", course, "/syllabus", "/student/agenda"):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200, path)
+            self.assertIn("no-store", response.headers["Cache-Control"], path)
+            self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
