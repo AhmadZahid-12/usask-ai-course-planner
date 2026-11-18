@@ -69,6 +69,8 @@ For an existing installation, use a new backup path outside the checkout:
 python -m flask --app main migrate-student --backup ~/planner-before-student.sqlite
 ```
 
-The command uses SQLite's online backup API before changing an existing database. Schema version 1 adds calendar storage and version 2 adds course workspaces and materials. The migration is additive and leaves saved plans and catalogue records intact. Keep the backup private because it may contain personal notes or uploaded material. The app keeps working as a local planner before the student migrations run.
+The command uses SQLite's online backup API before changing an existing database and verifies the snapshot with `PRAGMA quick_check`. It stops if student tables already exist without a recorded migration, or if the recorded schema is missing required tables or columns. Schema version 1 adds calendar storage and version 2 adds course workspaces and materials. The migration is additive and leaves saved plans and catalogue records intact. Keep the backup private because it may contain personal notes or uploaded material. The app keeps working as a local planner before the student migrations run.
+
+If the upgrade fails, SQLite rolls back the schema transaction. Keep the original and the backup. To rehearse recovery, verify the backup with `sqlite3 -readonly /path/to/backup.sqlite 'PRAGMA quick_check;'` and test a separate copy. Before restoring to the original path, stop every process using the database and preserve the current DB and any WAL, SHM or journal files together. Restore the verified backup only after confirming that any writes made after the snapshot have been accounted for.
 
 This build is single-user for local use. Public deployment would require authentication, per-user authorization, isolated document storage, retention and deletion controls, rate limits, and operational monitoring.

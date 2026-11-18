@@ -56,9 +56,30 @@ def _back_up(database: Path, destination: Path) -> None:
         with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as source:
             with closing(sqlite3.connect(destination)) as output:
                 source.backup(output)
+                if output.execute("PRAGMA quick_check").fetchall() != [("ok",)]:
+                    raise ValueError("The backup did not pass SQLite's integrity check. No migration was applied.")
     except Exception:
         destination.unlink()
         raise
+
+
+def _check_student_tables(inspector, applied: set[int], target: int) -> None:
+    existing = set(inspector.get_table_names())
+    for version in range(1, max(target, max(applied, default=0)) + 1):
+        for model in _models_for_version(version):
+            table = model.__table__
+            if table.name in {"plans", "course_cache"}:
+                continue
+            if table.name not in existing:
+                if version in applied:
+                    raise ValueError(f"Migration history references a missing table: {table.name}.")
+                continue
+            if version not in applied:
+                raise ValueError(f"Unversioned student table already exists: {table.name}. Inspect a copy before migrating.")
+            actual = {column["name"] for column in inspector.get_columns(table.name)}
+            required = set(table.columns.keys())
+            if not required <= actual:
+                raise ValueError(f"Existing table has an incompatible schema: {table.name}.")
 
 
 def upgrade_student_schema(
@@ -77,7 +98,8 @@ def upgrade_student_schema(
     with db.engine.connect() as connection:
         # Hold a write reservation so the backup reflects the state being upgraded.
         connection.exec_driver_sql("BEGIN IMMEDIATE")
-        existing_tables = inspect(connection).get_table_names()
+        inspector = inspect(connection)
+        existing_tables = inspector.get_table_names()
         if _VERSION_TABLE.name in existing_tables:
             applied = set(connection.scalars(select(_VERSION_TABLE.c.version)))
         else:
@@ -88,6 +110,7 @@ def upgrade_student_schema(
             raise ValueError("The database has an unsupported migration history.")
 
         pending = [version for version in range(1, target + 1) if version not in applied]
+        _check_student_tables(inspector, applied, target)
         if not pending:
             connection.rollback()
             return []
