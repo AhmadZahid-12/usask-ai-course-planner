@@ -1,8 +1,7 @@
 from flask import Blueprint, Response, render_template, request, jsonify
 import json
-import os
 
-from app.gpt_helper import SUMMARY_UNAVAILABLE, summarize_course
+from app.gpt_helper import SUMMARY_UNAVAILABLE, summarize_course, summaries_enabled
 from app.scraper import course_url, get_course_raw_info
 
 from app.calendar_store import CalendarEvent
@@ -56,7 +55,7 @@ def assistant():
 
 def _assistant_page(**context):
     return render_template(
-        "assistant.html", ai_enabled=bool(os.getenv("OPENAI_API_KEY", "").strip()), **context,
+        "assistant.html", ai_enabled=summaries_enabled(), **context,
     )
 
 
@@ -102,8 +101,7 @@ def summarize_course_route():
         context["official"] = ""
         return _assistant_page(**context, error="Could not load the official course entry. Try the catalogue link.")
 
-    action = request.form.get("action", "generate")
-    if action == "generate" and os.getenv("OPENAI_API_KEY", "").strip():
+    if request.form.get("action") == "generate" and summaries_enabled():
         summary = summarize_course(code, desc=official)
         if summary == SUMMARY_UNAVAILABLE or not summary:
             return _assistant_page(**context, error="The AI summary is unavailable. The official entry is below.")

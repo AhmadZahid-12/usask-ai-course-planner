@@ -6,12 +6,17 @@ import os
 
 _client = None
 SUMMARY_UNAVAILABLE = "Sorry could not generate a summary right now. Please Try again in a minute."
+
+
+def summaries_enabled() -> bool:
+    return os.getenv("OPENAI_SUMMARIES_ENABLED") == "1" and bool(os.getenv("OPENAI_API_KEY", "").strip())
+
 # Grabs the clients name
 def _get_client():
     global _client
     if _client is None:
         # Uses os.getenv to check the project directories to searches if such client exists
-        _client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        _client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), max_retries=0)
     return _client
 
 # Prompts an instruction sheet for the API to further send to GPT
@@ -33,6 +38,8 @@ def summarize_course(course_code: str, desc: str | None = None) -> str:
     course_code = (course_code or "").strip().upper()
     if not course_code:
         return "Please provide a course code (e.g., CMPT 270)."
+    if not summaries_enabled():
+        return SUMMARY_UNAVAILABLE
     # Holds users entered data
     user = f"Course: {course_code}\n"
     # If a description is entered updates the 'user' variable

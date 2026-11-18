@@ -4,7 +4,7 @@ A local Flask workspace for tracking Computer Science courses, checking prerequi
 
 ## Run locally
 
-Use Python 3.10 or later with IANA time-zone data available to Python (system zoneinfo or the Python `tzdata` package). From the project directory:
+Use Python 3.11.5 or later with IANA time-zone data available to Python (system zoneinfo or the Python `tzdata` package). From the project directory:
 
 ```sh
 python3 -m venv .venv
@@ -16,7 +16,9 @@ python -m flask --app main run
 
 Open [http://127.0.0.1:5000](http://127.0.0.1:5000). The database initialization command creates missing tables and keeps existing records. Saved progress lives in the local SQLite database. The app has no accounts or multi-user isolation.
 
-The dashboard, planner, Course Explorer, and official course lookup work without an OpenAI key. To enable generated course summaries, set `OPENAI_API_KEY` in your environment or local `.env` file. With a key configured, **Generate summary** sends public course text to OpenAI and can incur usage charges.
+Paid course summaries are disabled by default. To enable them for local use, set both `OPENAI_SUMMARIES_ENABLED=1` and `OPENAI_API_KEY` in your shell or in an ignored local `.env` file when using the Flask CLI. Only the explicit **Generate summary** action sends the course code and public USask catalogue text to OpenAI. Official lookup, planning recommendations, and document features run without OpenAI. Keep summaries disabled on shared or publicly reachable instances until the endpoint has authentication and per-user limits.
+
+Keep student data local unless the deployment has appropriate access controls. The app uses a single shared workspace and all visitors to a reachable instance can access it. Use synthetic data for a public demo and disable student-data writes and uploads there.
 
 ## Features
 

@@ -1,18 +1,13 @@
 import unittest
 
-from flask import Flask
-
+from app import create_app
 from app.db import db
 from app.models import CourseCache
-from app.routes import bp
 
 
 class PlanWorkspaceTests(unittest.TestCase):
     def setUp(self):
-        app = Flask("app")
-        app.config.update(TESTING=True, SQLALCHEMY_DATABASE_URI="sqlite://")
-        db.init_app(app)
-        app.register_blueprint(bp)
+        app = create_app({"TESTING": True, "SQLALCHEMY_DATABASE_URI": "sqlite://"})
         self.client = app.test_client()
         with app.app_context():
             db.create_all()
@@ -33,6 +28,17 @@ class PlanWorkspaceTests(unittest.TestCase):
         self.assertGreater(imported["id"], original["id"])
         self.assertEqual(self.client.get("/api/plan/load").get_json()["plan"], imported)
         self.assertEqual(self.client.post("/api/plan/import", json={"completed": [4]}).status_code, 400)
+
+    def test_plan_responses_are_private_and_cross_site_writes_are_rejected(self):
+        payload = {"name": "Private plan", "completed": [], "notes": "Advising notes"}
+        self.assertEqual(self.client.post("/api/plan/save", json=payload).status_code, 200)
+        for path in ("/api/plan/save", "/api/plan/import"):
+            rejected = self.client.post(path, json=payload, headers={"Origin": "https://example.test"})
+            self.assertEqual(rejected.status_code, 403)
+        for path in ("/api/plan/load", "/api/plan/export"):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.headers["Cache-Control"], "private, no-store")
 
     def test_sequence_checks_earlier_terms_and_flags_unknown_requirements(self):
         response = self.client.post("/api/planner/sequence", json={

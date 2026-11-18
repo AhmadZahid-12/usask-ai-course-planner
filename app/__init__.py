@@ -4,6 +4,9 @@ from app.db import db
 from app.routes import bp as main_bp
 
 STUDENT_BLUEPRINTS = {"calendar", "syllabus", "workspace"}
+PLAN_ENDPOINTS = {
+    "main.api_plan_save", "main.api_plan_load", "main.api_plan_export", "main.api_plan_import",
+}
 
 
 def create_app(config: dict | None = None):
@@ -29,8 +32,12 @@ def create_app(config: dict | None = None):
         return {"student_navigation": True}
 
     @app.before_request
-    def protect_student_mutations():
-        if request.blueprint not in STUDENT_BLUEPRINTS:
+    def protect_workspace_mutations():
+        if (
+            request.blueprint not in STUDENT_BLUEPRINTS
+            and request.endpoint not in PLAN_ENDPOINTS
+            and request.endpoint != "main.summarize_course"
+        ):
             return None
         if request.method not in {"POST", "PATCH", "PUT", "DELETE"}:
             return None
@@ -42,8 +49,12 @@ def create_app(config: dict | None = None):
         return None
 
     @app.after_request
-    def protect_student_responses(response):
-        if request.blueprint in STUDENT_BLUEPRINTS or request.endpoint == "main.home":
+    def protect_workspace_responses(response):
+        if (
+            request.blueprint in STUDENT_BLUEPRINTS
+            or request.endpoint in PLAN_ENDPOINTS
+            or request.endpoint == "main.home"
+        ):
             response.headers["Cache-Control"] = "private, no-store"
             response.headers["X-Content-Type-Options"] = "nosniff"
         return response
