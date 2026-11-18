@@ -148,3 +148,31 @@ def planner_status(
             for item in locked
         ],
     }
+
+
+def check_term_sequence(terms: list[list[str]], completed: set[str]) -> list[list[dict]]:
+    """Compare draft order with cached prerequisites, without requesting class times."""
+    codes = {code for term in terms for code in term}
+    records = {
+        row.code: parse_prereqs(row.raw_text)
+        for row in CourseCache.query.filter(CourseCache.code.in_(codes))
+    }
+    earlier = set(completed)
+    results = []
+    for term in terms:
+        course_map: dict[str, CourseInfo] = {
+            code: {"prereqs": records.get(code), "not_found": code not in records}
+            for code in term
+        }
+        _, locked = classify_courses(course_map, earlier)
+        reasons = {row["course"]: row for row in locked}
+        results.append([
+            {
+                **reasons.get(code, {"course": code, "missing": []}),
+                "already_completed": code in completed,
+                "dependencies": (records.get(code) or [])[:4],
+            }
+            for code in term
+        ])
+        earlier.update(term)
+    return results

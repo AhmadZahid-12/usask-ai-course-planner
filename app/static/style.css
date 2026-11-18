@@ -218,3 +218,41 @@ dialog::backdrop { background: #090e16b5; }
 @media (max-width: 420px) {
   .filter-form > button { grid-column: span 2; }
 }
+
+.planner-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(240px, 1fr); align-items: start; gap: 16px; }
+.notice { background: var(--raised); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 15px; min-height: 39px; }
+.error-text { color: var(--error); }
+.checklist { list-style: none; padding: 0; margin: 0; }
+.check-row { display: flex; align-items: center; gap: 10px; min-width: 0; cursor: pointer; }
+.check-row input { flex: none; margin: 0; }
+.check-row strong, .check-row .course-code { display: block; }
+.check-row strong { font-size: .85rem; }
+.plan-status { text-align: right; display: grid; justify-items: end; flex: 0 1 45%; }
+.plan-status small { color: var(--muted); font-size: .72rem; margin-top: 3px; }
+.plan-settings input, .plan-settings textarea { display: block; width: 100%; margin: 4px 0 12px; }
+.plan-settings p { font-size: .79rem; margin-top: 11px; }
+.inline-form, .button-group, .tag-list { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+.inline-form input { width: 100%; }
+.inline-form label { font-size: .81rem; margin-bottom: 4px; }
+.tag-list:not(:empty) { margin-top: 9px; }
+.chip { min-height: 33px; padding: 5px 9px; font-size: .78rem; }
+.terms-card { margin-top: 16px; }
+.terms-body { padding: 13px 18px 17px; }
+.terms-body > p { margin-bottom: 11px; }
+#terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 263px), 1fr)); gap: 12px; }
+#terms:not(:empty) { margin-bottom: 15px; }
+.term { border: 1px solid var(--border); border-radius: 9px; padding: 10px; }
+.term header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 8px; }
+.term header h3 { overflow-wrap: anywhere; }
+.term header .button { min-height: 33px; font-size: .75rem; }
+.term-course { display: grid; align-items: center; grid-template-columns: 1fr auto; border-top: 1px solid var(--border); }
+.term-course a:hover { text-decoration: underline; }
+.term-course .icon-button { min-height: 32px; }
+.term .inline-form { margin-top: 8px; }
+.term .inline-form input { width: min(140px, 100%); }
+.sequence-result { font-size: .76rem; color: var(--warn); grid-column: span 2; padding-bottom: 7px; }
+.dialog-form { display: grid; gap: 6px; margin-top: 14px; }
+.dialog-form textarea { min-width: min(400px, calc(100vw - 85px)); }
+.dialog-form button { justify-self: end; }
+#confirm-dialog .button-group { justify-content: end; margin-top: 14px; }
+@media (max-width: 930px) { .planner-grid { grid-template-columns: 1fr; } }

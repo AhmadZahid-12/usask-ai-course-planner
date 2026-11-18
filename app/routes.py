@@ -12,6 +12,7 @@ from app.planner import COURSE_RE, normalize_code
 
 from app.services import (
     bulk_scrape_courses,
+    check_term_sequence,
     planner_status,
 )
 
@@ -27,7 +28,7 @@ PROGRAM_URL = "https://programs.usask.ca/arts-and-science/computer-science/bsc-4
 def home():
     catalogue = starter_catalogue()
     return render_template(
-        "dashboard.html", courses=catalogue["courses"], edition=catalogue["edition"],
+        "dashboard.html", courses=template_courses(), edition=catalogue["edition"],
         program_url=PROGRAM_URL,
     )
 
@@ -62,7 +63,16 @@ def about():
 
 @bp.route("/planner", methods=["GET"])
 def planner():
-    return render_template("planner.html")
+    return render_template("planner.html", courses=template_courses())
+
+
+def template_courses() -> dict:
+    degree = json.loads(DEFAULT_DEGREE_FILE.read_text(encoding="utf-8"))
+    metadata = starter_catalogue()["courses"]
+    return {
+        code: metadata.get(code, {"title": code, "credit_units": None})
+        for code in degree["required_courses"]
+    }
 
 
 @bp.route("/summarize", methods=["POST"], endpoint="summarize_course")
@@ -170,31 +180,70 @@ def api_planner_unlocked():
     return _planner_status_response(legacy=True)
 
 
+@bp.post("/api/planner/sequence")
+def api_term_sequence():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Expected a draft with terms and completed courses."}), 400
+    terms = payload.get("terms")
+    completed = payload.get("completed", [])
+    if (
+        not _string_list(completed) or len(completed) > 1000
+        or not isinstance(terms, list) or len(terms) > 16
+        or not all(_string_list(term) for term in terms)
+        or sum(map(len, terms)) > 100
+    ):
+        return jsonify({"error": "Use course codes and at most 16 terms and 100 draft courses."}), 400
+    normalized = [[normalize_code(code) for code in term] for term in terms]
+    codes = [code for term in normalized for code in term]
+    if any(not COURSE_RE.fullmatch(code) for code in codes) or len(set(codes)) != len(codes):
+        return jsonify({"error": "Use valid course codes and place each draft course only once."}), 400
+    return jsonify(terms=check_term_sequence(normalized, set(map(normalize_code, completed))))
+
+
+def _string_list(value) -> bool:
+    return isinstance(value, list) and all(isinstance(item, str) for item in value)
+
+
+def _plan_fields(payload, default_name: str) -> tuple[str, list[str], str]:
+    if not isinstance(payload, dict):
+        raise ValueError("Expected a plan JSON object.")
+    name = payload.get("name") or default_name
+    completed = payload.get("completed", [])
+    notes = payload.get("notes", "")
+    if not isinstance(name, str) or len(name) > 120:
+        raise ValueError("Enter a plan name up to 120 characters.")
+    if not _string_list(completed):
+        raise ValueError("Completed courses must be a list of course codes.")
+    if not isinstance(notes, str):
+        raise ValueError("Notes must be text.")
+    return name.strip() or default_name, list(map(normalize_code, completed)), notes
+
+
 # ---------------------------
 # API: Plan Save/Load
 # ---------------------------
 
 @bp.route("/api/plan/save", methods=["POST"])
 def api_plan_save():
-    payload = request.get_json(silent=True) or {}
-    name = (payload.get("name") or "My Plan").strip()
-    completed = payload.get("completed", [])
-    notes = payload.get("notes", "")
-
-    completed_norm = [normalize_code(c) for c in completed]
-    completed_json = json.dumps(completed_norm)
-
-    plan_id = payload.get("id")
+    payload = request.get_json(silent=True)
+    if payload is None:
+        payload = {}
+    try:
+        name, completed, notes = _plan_fields(payload, "My Plan")
+        plan_id = int(payload["id"]) if payload.get("id") else None
+    except (TypeError, ValueError) as error:
+        return jsonify({"error": str(error)}), 400
 
     if plan_id:
-        plan = Plan.query.get(int(plan_id))
+        plan = db.session.get(Plan, plan_id)
         if not plan:
             return jsonify({"error": "Plan not found"}), 404
     else:
         plan = Plan()
 
     plan.name = name
-    plan.completed_json = completed_json
+    plan.completed_json = json.dumps(completed)
     plan.notes = notes
 
     db.session.add(plan)
@@ -228,16 +277,17 @@ def api_plan_export():
 
 @bp.route("/api/plan/import", methods=["POST"])
 def api_plan_import():
-    payload = request.get_json(silent=True) or {}
-    name = (payload.get("name") or "Imported Plan").strip()
-    completed = payload.get("completed", [])
-    notes = payload.get("notes", "")
-
-    completed_norm = [normalize_code(c) for c in completed]
+    payload = request.get_json(silent=True)
+    if payload is None:
+        payload = {}
+    try:
+        name, completed, notes = _plan_fields(payload, "Imported Plan")
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
 
     plan = Plan(
         name=name,
-        completed_json=json.dumps(completed_norm),
+        completed_json=json.dumps(completed),
         notes=notes,
     )
     db.session.add(plan)
