@@ -31,7 +31,9 @@ class WorkspaceViewsTests(unittest.TestCase):
         self.assertIsNotNone(details.select_one("#back-to-results"))
         headings = [node.get_text() for node in details.select("h3, summary")]
         self.assertEqual(headings, ["Prerequisites", "Catalogue description"])
-        self.assertIsNotNone(page.select_one("#course-result .course-identity"))
+        result_template = page.select_one("template#course-result")
+        self.assertIsNotNone(result_template)
+        self.assertIsNotNone(result_template.select_one(".course-identity"))
 
     def test_planner_places_workspace_before_saved_plan_tools(self):
         page = self.page("/planner")
