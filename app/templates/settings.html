@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "components.html" import page_heading %}
+{% block title %}Settings · USask Course Planner{% endblock %}
+{% block content %}
+{{ page_heading('Settings', 'Manage preferences for this browser.') }}
+<section class="card settings-card"><h2>Appearance</h2><label for="theme-select">Colour theme</label>
+<select id="theme-select"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select>
+<p class="muted">Your choice is saved on this device.</p></section>
+{% endblock %}

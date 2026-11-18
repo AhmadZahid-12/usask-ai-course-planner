@@ -1,0 +1,12 @@
+{
+  "edition": "2026–27",
+  "courses": {
+    "CMPT 141": {"title": "Introduction to Computer Science", "credit_units": 3},
+    "CMPT 145": {"title": "Principles of Computer Science", "credit_units": 3},
+    "CMPT 214": {"title": "Programming Principles and Practice", "credit_units": 3},
+    "CMPT 260": {"title": "Mathematical Logic and Computing", "credit_units": 3},
+    "CMPT 270": {"title": "Developing Object-Oriented Systems", "credit_units": 3},
+    "CMPT 280": {"title": "Intermediate Data Structures and Algorithms", "credit_units": 3},
+    "CMPT 332": {"title": "Operating Systems Concepts", "credit_units": 3}
+  }
+}

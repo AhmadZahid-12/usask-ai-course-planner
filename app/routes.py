@@ -19,11 +19,35 @@ DEBUG_SCRAPE = True  # set False later
 
 DEGREE_DIR = Path(__file__).resolve().parent / "degree"
 DEFAULT_DEGREE_FILE = DEGREE_DIR / "bsc_cs.json"
+PROGRAM_URL = "https://programs.usask.ca/arts-and-science/computer-science/bsc-4-computer-science.php"
+
+
+def starter_catalogue():
+    return json.loads((DEGREE_DIR / "starter_catalogue.json").read_text(encoding="utf-8"))
 
 
 @bp.route("/", methods=["GET"])
 def home():
+    catalogue = starter_catalogue()
+    return render_template(
+        "dashboard.html", courses=catalogue["courses"], edition=catalogue["edition"],
+        program_url=PROGRAM_URL,
+    )
+
+
+@bp.get("/courses")
+def explorer():
     return render_template("index.html", summary=None)
+
+
+@bp.get("/assistant")
+def assistant():
+    return render_template("index.html", summary=None)
+
+
+@bp.get("/settings")
+def settings():
+    return render_template("settings.html")
 
 
 @bp.route("/about", methods=["GET"])

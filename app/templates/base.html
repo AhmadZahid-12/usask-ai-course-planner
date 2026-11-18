@@ -1,23 +1,56 @@
+{% from "components.html" import icon %}
+{% set pages = [('home', 'Dashboard', 'dashboard'), ('explorer', 'Course Explorer', 'search'), ('planner', 'Degree Planner', 'planner'), ('assistant', 'AI Assistant', 'spark'), ('settings', 'Settings', 'settings')] %}
+{% set current = request.endpoint.split('.')[-1] if request.endpoint else '' %}
+{% macro navigation() %}
+<nav class="navigation" aria-label="Workspace">
+  {% for endpoint, label, glyph in pages %}
+  {% set active = current == endpoint or (endpoint == 'assistant' and current == 'summarize_course') %}
+  <a class="nav-link" href="{{ url_for('main.' ~ endpoint) }}" title="{{ label }}"{% if active %} aria-current="page"{% endif %}>{{ icon(glyph, 18) }}<span>{{ label }}</span></a>
+  {% endfor %}
+</nav>
+{% endmacro %}
 <!doctype html>
-<html>
+<html lang="en" data-theme="dark">
 <head>
-    <!-- Setting the text encoding as UTF-8 -->
-    <meta charset="UTF-8">
-    <!-- Setting the view point mobile friendly -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}USask AI Course Planner{% endblock %}</title>
-    <!-- Connects the CSS file through flask and searches for the filename  -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}USask AI Course Planner{% endblock %}</title>
+  <script>
+    try {
+      const theme = localStorage.getItem('planner-theme') || 'dark';
+      document.documentElement.dataset.theme = theme === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : theme;
+      document.documentElement.dataset.sidebar = localStorage.getItem('planner-sidebar') || 'expanded';
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script type="module" src="{{ url_for('static', filename='js/shell.js') }}"></script>
+  {% block scripts %}{% endblock %}
 </head>
 <body>
-<nav>
-    <!-- Tags the url link to the main home page -->
-    <a href="{{ url_for('main.home') }}">Home</a> •
-    <!-- Tags the url link to the main about page -->
-    <a href="{{ url_for('main.about') }}">About</a>
-</nav>
-<hr>
-{% block content %}{% endblock %}
-<!-- Closes the tags -->
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="app-shell">
+  <aside class="sidebar" id="desktop-sidebar">
+    <a class="brand" href="{{ url_for('main.home') }}" aria-label="USask AI Course Planner">{{ icon('book', 19) }}<span><strong>Course Planner</strong><small>USask · Student workspace</small></span></a>
+    {{ navigation() }}
+    <div class="sidebar-footer"><a class="nav-link" title="Official USask Catalogue" href="https://catalogue.usask.ca/">{{ icon('external', 17) }}<span>USask Catalogue</span></a></div>
+  </aside>
+  <dialog id="mobile-navigation" class="mobile-navigation" aria-label="Workspace menu">
+    <div class="dialog-heading"><strong>Course Planner</strong><form method="dialog"><button class="icon-button" aria-label="Close navigation">{{ icon('close') }}</button></form></div>
+    {{ navigation() }}
+  </dialog>
+  <div class="main-shell">
+    <header class="topbar">
+      <div class="topbar-start"><button id="sidebar-toggle" class="icon-button" type="button" aria-label="Toggle navigation" aria-controls="desktop-sidebar">{{ icon('panel', 19) }}</button>
+        <span class="topbar-divider"></span>
+        <span>{% for endpoint, label, glyph in pages %}{% if current == endpoint or (current == 'summarize_course' and endpoint == 'assistant') %}{{ label }}{% endif %}{% endfor %}</span>
+      </div>
+      <div class="topbar-actions">
+        <a class="header-search" aria-label="Find a course" href="{{ url_for('main.explorer', focus='search') }}">{{ icon('search', 17) }}<span>Find a course</span><kbd>/</kbd></a>
+        <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch colour theme"><span class="show-dark">{{ icon('sun', 18) }}</span><span class="show-light">{{ icon('moon', 18) }}</span></button>
+      </div>
+    </header>
+    <main id="main" class="page" tabindex="-1">{% block content %}{% endblock %}</main>
+  </div>
+</div>
 </body>
 </html>

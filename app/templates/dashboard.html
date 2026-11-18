@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "components.html" import icon, metric, page_heading %}
+{% block title %}Dashboard · USask Course Planner{% endblock %}
+{% block scripts %}<script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}
+{% block content %}
+{% call page_heading('Planning dashboard', 'Track completed courses and see which prerequisites to work on next.') %}
+<a class="button primary" href="{{ url_for('main.planner') }}">{{ icon('planner', 18) }} Open degree planner {{ icon('arrow', 17) }}</a>
+{% endcall %}
+<section class="card overview" aria-labelledby="progress-title">
+  <div>
+    <span class="badge neutral">{{ icon('book', 14) }} Starter template</span>
+    <h2 id="progress-title">BSc Computer Science</h2>
+    <p>Track the seven courses in this starter template. Review the official program rules for degree and specialization requirements.</p>
+    <a class="text-link" href="{{ program_url }}">Program requirements {{ icon('external', 15) }}</a>
+  </div>
+  <div class="progress-block">
+    <div class="progress-heading"><span>Template progress</span><span id="template-percent">—</span></div>
+    <progress id="template-progress" value="0" max="100" aria-label="Template progress"></progress>
+    <span id="template-count" class="muted">Loading saved plan…</span>
+    <small id="template-credits" class="muted">Template credits unavailable</small>
+    <small class="muted">Degree credit progress requires a full audit.</small>
+  </div>
+</section>
+<div class="metric-grid" aria-label="Course eligibility">
+  {{ metric('completed-count', 'Completed', 'check', 'complete') }}
+  {{ metric('eligible-count', 'Prerequisites met', 'arrow', 'eligible') }}
+  {{ metric('locked-count', 'Locked', 'lock', 'locked') }}
+  {{ metric('review-count', 'Manual verification', 'review', 'review') }}
+</div>
+<div class="dashboard-grid">
+<section class="card" aria-labelledby="courses-title">
+  <header class="card-heading"><div><h2 id="courses-title">Template courses</h2><p>Prerequisites based on your latest saved plan.</p></div><button id="check-status" class="button secondary" type="button" hidden>Check again</button></header>
+  <p id="dashboard-message" class="inline-message" role="status">Loading course status…</p>
+  <div class="course-list" id="dashboard-courses">
+    {% for code, course in courses.items() %}
+    <div class="course-row" data-code="{{ code }}" data-credit="{{ course.credit_units }}"><a class="course-identity" href="{{ url_for('main.explorer', q=code) }}"><span class="course-code">{{ code }}</span><strong>{{ course.title }}</strong></a><span class="row-status badge neutral">Checking…</span></div>
+    {% endfor %}
+  </div>
+</section>
+<aside class="dashboard-side" aria-label="Planning resources">
+  <section class="card side-card">
+    <h2>Quick actions</h2>
+    <a class="quick-link" href="{{ url_for('main.planner') }}"><span class="metric-icon eligible">{{ icon('planner', 17) }}</span><span><strong>Update completed courses</strong><small>Open your degree planner</small></span>{{ icon('arrow', 16) }}</a>
+    <a class="quick-link" href="{{ url_for('main.explorer') }}"><span class="metric-icon complete">{{ icon('search', 17) }}</span><span><strong>Look up a course</strong><small>Read official catalogue details</small></span>{{ icon('arrow', 16) }}</a>
+    <a class="quick-link" href="{{ url_for('main.assistant') }}"><span class="metric-icon review">{{ icon('spark', 17) }}</span><span><strong>Get a course summary</strong><small>Compare it with the official entry</small></span>{{ icon('arrow', 16) }}</a>
+  </section>
+  <section class="card side-card sources"><h2>Official sources</h2><p>University of Saskatchewan · {{ edition }}</p>
+    <a href="https://catalogue.usask.ca/">Course Catalogue {{ icon('external', 15) }}</a>
+    <a href="{{ program_url }}">Computer Science and AI specialization {{ icon('external', 15) }}</a>
+  </section>
+</aside>
+</div>
+{% endblock %}
