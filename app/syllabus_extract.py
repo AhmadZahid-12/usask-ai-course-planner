@@ -46,6 +46,7 @@ _TIME_NOTE = re.compile(
     re.IGNORECASE,
 )
 _DUE = re.compile(r"\b(?:due|deadline|exam|quiz|test|midterm)(?:\s+(?:on|by|at))?\b", re.IGNORECASE)
+_EXPLICIT_DUE = re.compile(r"\b(?:is\s+)?due(?:\s+(?:on|by|at))?\b(?!\s+to\b)", re.IGNORECASE)
 _RANGE = re.compile(r"\b\d{1,2}\s*(?:[-–—]|to)\s*\d{1,2}\b", re.IGNORECASE)
 _INFERRED_COURSE = re.compile(r"\b(?:[A-Z]{2,5}\s*\d{3,4}[A-Z]?)(?:\.\d+)?\b")
 _NON_SUBJECTS = {
@@ -102,7 +103,7 @@ def _category(word: str) -> str:
         return "quiz"
     if word.startswith(("midterm", "final exam", "exam", "test")):
         return "exam"
-    if word.startswith(("deadline", "reading", "withdrawal", "important", "class")):
+    if word.startswith(("due", "is due", "deadline", "reading", "withdrawal", "important", "class")):
         return "personal"
     return "assignment"
 
@@ -163,9 +164,13 @@ def extract_candidates(pages: list[tuple[int | None, str]], course_code: str = "
             if not line or len(line) > 700:
                 continue
             kind = _KIND.search(line)
-            if not kind:
-                continue
             dates = list(_EXACT_DATE.finditer(line))
+            if not kind:
+                prefix = line[:dates[0].start()] if dates else ""
+                due = _EXPLICIT_DUE.search(prefix)
+                if not due or not 1 <= len(prefix[:due.start()].strip()) <= 100 or prefix[due.end():].strip(" :,-"):
+                    continue
+                kind = due
             partial = [match for match in _PARTIAL_DATE.finditer(line)
                        if not any(item.start() <= match.start() and match.end() <= item.end() for item in dates)]
             if not dates and not partial and not (_REVIEW.search(line) or _DUE.search(line[:55]) and len(line) < 80):

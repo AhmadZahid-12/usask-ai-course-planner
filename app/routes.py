@@ -7,7 +7,7 @@ from app.scraper import course_url, get_course_raw_info
 
 from app.calendar_store import CalendarEvent
 from app.catalogue import available_courses, cmpt_catalogue, course_detail, latest_completed, starter_catalogue
-from app.course_workspace import DEADLINE_CATEGORIES, student_agenda
+from app.course_workspace import student_agenda
 from app.db import db
 from app.institutions.usask import DEGREE_FILE as DEFAULT_DEGREE_FILE, PROGRAM_URL
 from app.models import Plan
@@ -28,7 +28,7 @@ def home():
     return render_template(
         "dashboard.html", courses=template_courses(), edition=catalogue["edition"],
         program_url=PROGRAM_URL, calendar_ready=student_storage_ready(CalendarEvent),
-        deadlines=student_agenda(14, categories=DEADLINE_CATEGORIES)[:4],
+        deadlines=student_agenda(14, deadlines_only=True)[:4],
     )
 
 

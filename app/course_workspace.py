@@ -50,7 +50,9 @@ def storage_available() -> bool:
     return student_storage_ready(StudentCourse, CourseMaterial)
 
 
-def student_agenda(days: int, *, categories=None, course_code: str | None = None) -> list[dict]:
+def student_agenda(
+    days: int, *, categories=None, course_code: str | None = None, deadlines_only: bool = False
+) -> list[dict]:
     """Read the student's dated calendar entries for the local planning window."""
     if not student_storage_ready(CalendarEvent):
         return []
@@ -60,6 +62,8 @@ def student_agenda(days: int, *, categories=None, course_code: str | None = None
     visible = []
     for record in events:
         event = record.as_dict()
+        if deadlines_only and not is_deadline(event):
+            continue
         if categories and event["category"] not in categories:
             continue
         if course_code and event["course_code"] != course_code:
@@ -79,6 +83,10 @@ def student_agenda(days: int, *, categories=None, course_code: str | None = None
             event["when"] = f"{local_start:%a, %b} {local_start.day} · {due}{local_start:%I:%M %p}"
         visible.append(event)
     return visible
+
+
+def is_deadline(event: dict) -> bool:
+    return event["deadline"] or event["category"] in DEADLINE_CATEGORIES
 
 
 def _course_or_404(course_id: int) -> StudentCourse:
@@ -114,7 +122,7 @@ def courses():
     return redirect(url_for("workspace.course_page", course_id=course.id), code=303)
 
 
-def _render_course(course, *, query="", error=None):
+def _render_course(course, *, query="", error=None, note_form=None):
     materials = select(CourseMaterial).where(CourseMaterial.course_id == course.id).order_by(CourseMaterial.id.desc())
     if query:
         needle = query.lower()
@@ -124,8 +132,8 @@ def _render_course(course, *, query="", error=None):
         )
     return render_template(
         "student_course.html", course=course, materials=db.session.scalars(materials).all(),
-        deadlines=student_agenda(90, categories=DEADLINE_CATEGORIES, course_code=course.code),
-        catalogue=catalogue_url(course.code), query=query, error=error,
+        deadlines=student_agenda(90, course_code=course.code, deadlines_only=True),
+        catalogue=catalogue_url(course.code), query=query, error=error, note_form=note_form,
     ), 422 if error else 200
 
 
@@ -140,7 +148,10 @@ def save_notes(course_id):
     title = request.form.get("title", "").strip()
     notes = request.form.get("notes", "")
     if not title or len(title) > 160 or len(notes) > 20_000:
-        return _render_course(course, error="Enter a title under 161 characters and notes under 20,001 characters.")
+        return _render_course(
+            course, error="Enter a title up to 160 characters and notes up to 20,000 characters.",
+            note_form={"title": title[:160], "notes": notes[:20_000]},
+        )
     course.title = title
     course.notes = notes
     db.session.commit()
@@ -220,7 +231,7 @@ def agenda():
         abort(404)
     title, days, categories = views[view]
     events = student_agenda(days, categories=categories)
-    first_deadline = next((event for event in events if event["category"] in DEADLINE_CATEGORIES), None)
+    first_deadline = next((event for event in events if is_deadline(event)), None)
     return render_template(
         "student_agenda.html", view=view, title=title, events=events, suggestion=first_deadline,
         ready=student_storage_ready(CalendarEvent),

@@ -21,7 +21,7 @@
   <aside class="card student-panel">
     <span class="badge eligible">{{ icon('spark', 14) }} Suggestion</span>
     <h2>What to work on</h2>
-    {% if suggestion %}<p>Review <strong>{{ suggestion.title }}</strong> first. It is the earliest assignment, quiz or exam in this window.</p>
+    {% if suggestion %}<p>Review <strong>{{ suggestion.title }}</strong> first. It is the earliest saved deadline in this window.</p>
     {% else %}<p class="muted">Add deadlines to your calendar to get a suggestion based on their order.</p>{% endif %}
   </aside>
 </div>

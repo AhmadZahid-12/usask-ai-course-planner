@@ -16,8 +16,8 @@
     <section class="card student-panel" aria-labelledby="notes-title">
       <h2 id="notes-title">Course notes</h2>
       <form action="{{ url_for('workspace.save_notes', course_id=course.id) }}" method="post" class="student-form">
-        <label for="course-title-edit">Workspace title</label><input id="course-title-edit" name="title" maxlength="160" value="{{ course.title }}" required>
-        <label for="course-notes-edit">Notes</label><textarea id="course-notes-edit" name="notes" rows="7" maxlength="20000" placeholder="Add notes for your next class">{{ course.notes }}</textarea>
+        <label for="course-title-edit">Workspace title</label><input id="course-title-edit" name="title" maxlength="160" value="{{ note_form.title if note_form else course.title }}" required>
+        <label for="course-notes-edit">Notes</label><textarea id="course-notes-edit" name="notes" rows="7" maxlength="20000" placeholder="Add notes for your next class">{{ note_form.notes if note_form else course.notes }}</textarea>
         <button class="button primary" type="submit">Save notes</button>
       </form>
     </section>
@@ -45,7 +45,7 @@
     </section>
   </div>
   <aside class="card student-panel">
-    <h2>Assignments and exams</h2><p class="muted">Next 90 days · Saskatchewan time</p>
+    <h2>Course deadlines</h2><p class="muted">Next 90 days · Saskatchewan time</p>
     {% if deadlines %}{{ event_list(deadlines, true) }}{% else %}<p class="muted student-aside-empty">No upcoming deadlines are recorded for {{ course.code }}.</p>{% endif %}
     <a class="text-link" href="{{ url_for('syllabus.upload_page', course_code=course.code) }}">Review a syllabus {{ icon('arrow', 16) }}</a>
   </aside>

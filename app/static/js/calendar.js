@@ -162,9 +162,10 @@ function eventTime(event, day) {
 }
 
 function eventButton(event, day, compact = false) {
-  const [category, symbol] = categories[event.category] || categories.personal;
+  const genericDeadline = event.deadline && event.category === 'personal';
+  const [category, symbol] = genericDeadline ? ['Deadline', '◇'] : categories[event.category] || categories.personal;
   const node = button('calendar-event');
-  node.dataset.category = event.category;
+  node.dataset.category = genericDeadline ? 'assignment' : event.category;
   node.dataset.eventId = event.id;
   const symbolNode = element('span', 'calendar-event-icon', symbol);
   symbolNode.setAttribute('aria-hidden', 'true');

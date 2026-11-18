@@ -2,10 +2,11 @@
 {% macro event_list(events, compact=false) %}
 <ul class="student-events{% if compact %} compact-events{% endif %}">
   {% for event in events %}
+  {% set kind = "deadline" if event.deadline and event.category == "personal" else event.category %}
   <li>
-    <span class="event-mark event-{{ event.category }}">{{ icon('planner' if event.category == 'class' else 'check' if event.category == 'assignment' else 'review' if event.category in ['quiz','exam'] else 'book', 16) }}</span>
+    <span class="event-mark event-{{ kind }}">{{ icon('planner' if event.category == 'class' else 'check' if kind in ['assignment','deadline'] else 'review' if event.category in ['quiz','exam'] else 'book', 16) }}</span>
     <div><strong>{{ event.title }}</strong><small>{{ event.when }}{% if event.course_code %} · {{ event.course_code }}{% endif %}</small></div>
-    {% if not compact %}<span class="badge neutral">{{ event.category|capitalize }}</span>{% endif %}
+    {% if not compact %}<span class="badge neutral">{{ kind|capitalize }}</span>{% endif %}
   </li>
   {% endfor %}
 </ul>
