@@ -1,0 +1,391 @@
+{
+  "edition": "2026–27",
+  "retrieved": "2026-11-18",
+  "source": "https://catalogue.usask.ca/?subj_code=CMPT",
+  "courses": {
+    "CMPT 140": {
+      "title": "Introduction to Creative Computing",
+      "credit_units": 3
+    },
+    "CMPT 141": {
+      "title": "Introduction to Computer Science",
+      "credit_units": 3
+    },
+    "CMPT 142": {
+      "title": "Introduction to Computer Science for Engineers",
+      "credit_units": 3
+    },
+    "CMPT 145": {
+      "title": "Principles of Computer Science",
+      "credit_units": 3
+    },
+    "CMPT 146": {
+      "title": "Principles of Computer Science for Engineers",
+      "credit_units": 3
+    },
+    "CMPT 214": {
+      "title": "Programming Principles and Practice",
+      "credit_units": 3
+    },
+    "CMPT 215": {
+      "title": "Introduction to Computer Organization and Architecture",
+      "credit_units": 3
+    },
+    "CMPT 260": {
+      "title": "Mathematical Logic and Computing",
+      "credit_units": 3
+    },
+    "CMPT 263": {
+      "title": "Computational Logic and Program Reasoning",
+      "credit_units": 3
+    },
+    "CMPT 270": {
+      "title": "Developing Object-Oriented Systems",
+      "credit_units": 3
+    },
+    "CMPT 280": {
+      "title": "Intermediate Data Structures and Algorithms",
+      "credit_units": 3
+    },
+    "CMPT 281": {
+      "title": "Website Design and Development",
+      "credit_units": 3
+    },
+    "CMPT 298": {
+      "title": "Special Topics",
+      "credit_units": 3
+    },
+    "CMPT 299": {
+      "title": "Special Topics",
+      "credit_units": 6
+    },
+    "CMPT 306": {
+      "title": "Game Mechanics",
+      "credit_units": 3
+    },
+    "CMPT 317": {
+      "title": "Introduction to Artificial Intelligence",
+      "credit_units": 3
+    },
+    "CMPT 318": {
+      "title": "Data Analytics",
+      "credit_units": 3
+    },
+    "CMPT 332": {
+      "title": "Operating Systems Concepts",
+      "credit_units": 3
+    },
+    "CMPT 340": {
+      "title": "Programming Language Paradigms",
+      "credit_units": 3
+    },
+    "CMPT 353": {
+      "title": "Full Stack Web Programming",
+      "credit_units": 3
+    },
+    "CMPT 360": {
+      "title": "Algorithm Design Analysis and Correctness",
+      "credit_units": 3
+    },
+    "CMPT 364": {
+      "title": "Automata and Formal Languages",
+      "credit_units": 3
+    },
+    "CMPT 370": {
+      "title": "Intermediate Software Engineering",
+      "credit_units": 3
+    },
+    "CMPT 371": {
+      "title": "Software Management",
+      "credit_units": 3
+    },
+    "CMPT 381": {
+      "title": "Implementation of Graphical User Interfaces",
+      "credit_units": 3
+    },
+    "CMPT 384": {
+      "title": "Information Visualization",
+      "credit_units": 3
+    },
+    "CMPT 394": {
+      "title": "Simulation Principles",
+      "credit_units": 3
+    },
+    "CMPT 398": {
+      "title": "Special Topics",
+      "credit_units": 3
+    },
+    "CMPT 399": {
+      "title": "Special Topics",
+      "credit_units": 6
+    },
+    "CMPT 400": {
+      "title": "Research Topics in Computer Science",
+      "credit_units": 3
+    },
+    "CMPT 401": {
+      "title": "Professional Internship I",
+      "credit_units": 0
+    },
+    "CMPT 402": {
+      "title": "Professional Internship II",
+      "credit_units": 0
+    },
+    "CMPT 403": {
+      "title": "Professional Internship III",
+      "credit_units": 0
+    },
+    "CMPT 404": {
+      "title": "Professional Internship IV",
+      "credit_units": 0
+    },
+    "CMPT 405": {
+      "title": "Project Design and Implementation",
+      "credit_units": 3
+    },
+    "CMPT 406": {
+      "title": "Game Design Workshop",
+      "credit_units": 3
+    },
+    "CMPT 407": {
+      "title": "Research Topics in Applied Computing",
+      "credit_units": 3
+    },
+    "CMPT 412": {
+      "title": "Social Computing and Participative Web 2.0",
+      "credit_units": 3
+    },
+    "CMPT 423": {
+      "title": "Machine Learning",
+      "credit_units": 3
+    },
+    "CMPT 432": {
+      "title": "Advanced Operating Systems Concepts",
+      "credit_units": 3
+    },
+    "CMPT 433": {
+      "title": "System and Network Administration",
+      "credit_units": 3
+    },
+    "CMPT 434": {
+      "title": "Computer Networks",
+      "credit_units": 3
+    },
+    "CMPT 438": {
+      "title": "Introduction to Computer Security",
+      "credit_units": 3
+    },
+    "CMPT 439": {
+      "title": "Software Security.",
+      "credit_units": 3
+    },
+    "CMPT 440": {
+      "title": "Advanced Topics in Programming Languages",
+      "credit_units": 3
+    },
+    "CMPT 442": {
+      "title": "Compiler Design and Implementation",
+      "credit_units": 3
+    },
+    "CMPT 451": {
+      "title": "Modelling and Algorithms for Biological Systems",
+      "credit_units": 3
+    },
+    "CMPT 453": {
+      "title": "Cloud and Mobile Computing",
+      "credit_units": 3
+    },
+    "CMPT 463": {
+      "title": "Advanced Algorithms",
+      "credit_units": 3
+    },
+    "CMPT 470": {
+      "title": "Advanced Software Engineering",
+      "credit_units": 3
+    },
+    "CMPT 481": {
+      "title": "Human Computer Interaction",
+      "credit_units": 3
+    },
+    "CMPT 484": {
+      "title": "Graph Drawing and Network Visualization",
+      "credit_units": 3
+    },
+    "CMPT 485": {
+      "title": "Computer Graphics and Animation",
+      "credit_units": 3
+    },
+    "CMPT 487": {
+      "title": "Image Processing and Computer Vision",
+      "credit_units": 3
+    },
+    "CMPT 489": {
+      "title": "Deep Learning and Applications",
+      "credit_units": 3
+    },
+    "CMPT 498": {
+      "title": "Special Topics",
+      "credit_units": 3
+    },
+    "CMPT 499": {
+      "title": "Special Topics",
+      "credit_units": 6
+    },
+    "CMPT 810": {
+      "title": "Algorithms",
+      "credit_units": 3
+    },
+    "CMPT 811": {
+      "title": "Advanced Human Computer Interaction",
+      "credit_units": 3
+    },
+    "CMPT 813": {
+      "title": "Advanced Modelling and Algorithms on Biological Systems",
+      "credit_units": 3
+    },
+    "CMPT 815": {
+      "title": "Computer Systems and Performance Evaluation",
+      "credit_units": 3
+    },
+    "CMPT 816": {
+      "title": "Advanced Software Engineering",
+      "credit_units": 3
+    },
+    "CMPT 819": {
+      "title": "Advanced Image Processing and Computer Vision",
+      "credit_units": 3
+    },
+    "CMPT 820": {
+      "title": "Topics in Learning and Intelligent Systems",
+      "credit_units": 3
+    },
+    "CMPT 821": {
+      "title": "Advanced Topics in Programming Languages",
+      "credit_units": 3
+    },
+    "CMPT 823": {
+      "title": "Compilers",
+      "credit_units": 3
+    },
+    "CMPT 824": {
+      "title": "Graph Drawing and Network Visualization",
+      "credit_units": 3
+    },
+    "CMPT 827": {
+      "title": "Cognitive Scientific Approaches to AI",
+      "credit_units": 3
+    },
+    "CMPT 828": {
+      "title": "Advanced Deep Learning",
+      "credit_units": 3
+    },
+    "CMPT 829": {
+      "title": "Computer Graphics",
+      "credit_units": 3
+    },
+    "CMPT 830": {
+      "title": "Bioinformatics and Computational Biology",
+      "credit_units": 3
+    },
+    "CMPT 832": {
+      "title": "Advanced Operating Systems",
+      "credit_units": 3
+    },
+    "CMPT 835": {
+      "title": "Foundations of Concurrent Programming",
+      "credit_units": 3
+    },
+    "CMPT 838": {
+      "title": "Foundations of Computer Security",
+      "credit_units": 3
+    },
+    "CMPT 839": {
+      "title": "Foundations of Software Security.",
+      "credit_units": 3
+    },
+    "CMPT 842": {
+      "title": "Mobile and Cloud Computing",
+      "credit_units": 3
+    },
+    "CMPT 846": {
+      "title": "Software Maintenance and Evolution",
+      "credit_units": 3
+    },
+    "CMPT 851": {
+      "title": "Parallel Programming for Scientific Computing",
+      "credit_units": 3
+    },
+    "CMPT 854": {
+      "title": "Empirical Software Engineering",
+      "credit_units": 3
+    },
+    "CMPT 856": {
+      "title": "Topics in Software Engineering",
+      "credit_units": 3
+    },
+    "CMPT 857": {
+      "title": "Readings in Bioinformatics",
+      "credit_units": 3
+    },
+    "CMPT 858": {
+      "title": "Topics in Modeling and Operations Research",
+      "credit_units": 3
+    },
+    "CMPT 865": {
+      "title": "Advanced Parallel and Distributed Systems",
+      "credit_units": 3
+    },
+    "CMPT 866": {
+      "title": "Topics in Human Computer Interaction",
+      "credit_units": 3
+    },
+    "CMPT 867": {
+      "title": "Affective Computing",
+      "credit_units": 3
+    },
+    "CMPT 868": {
+      "title": "Social Computing",
+      "credit_units": 3
+    },
+    "CMPT 870": {
+      "title": "Foundations of Game User Research",
+      "credit_units": 3
+    },
+    "CMPT 878": {
+      "title": "Computational Agriculture",
+      "credit_units": 3
+    },
+    "CMPT 885": {
+      "title": "Human Centric Software Renovation",
+      "credit_units": 3
+    },
+    "CMPT 886": {
+      "title": "Research Methods I",
+      "credit_units": 3
+    },
+    "CMPT 887": {
+      "title": "Research Methods II",
+      "credit_units": 3
+    },
+    "CMPT 898": {
+      "title": "Special Topics",
+      "credit_units": 3
+    },
+    "CMPT 899": {
+      "title": "Special Topics",
+      "credit_units": null
+    },
+    "CMPT 990": {
+      "title": "Seminar",
+      "credit_units": 0
+    },
+    "CMPT 994": {
+      "title": "Research – Thesis",
+      "credit_units": 0
+    },
+    "CMPT 996": {
+      "title": "Research – Dissertation",
+      "credit_units": 0
+    }
+  }
+}

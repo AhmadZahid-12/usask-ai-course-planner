@@ -187,3 +187,34 @@ dialog::backdrop { background: #090e16b5; }
 @media (prefers-reduced-motion: no-preference) {
   .button, .icon-button, .nav-link, progress::-webkit-progress-value { transition: background .15s ease, color .15s ease, border-color .15s ease; }
 }
+
+.filters { padding: 15px 18px; margin-bottom: 17px; }
+.filter-form { display: grid; grid-template-columns: minmax(0, 2fr) minmax(95px, .7fr) minmax(95px, .7fr) auto; align-items: end; gap: 11px; }
+.filter-form input, .filter-form select { width: 100%; margin-top: 4px; }
+.filter-form label { font-size: .79rem; }
+.filters p { margin-top: 9px; font-size: .78rem; }
+.detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: start; gap: 16px; }
+.search-result { width: 100%; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); text-align: left; display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; }
+.search-result:hover { background: var(--raised); }
+.search-result strong { font-size: .84rem; font-weight: 600; }
+.search-result:focus-visible { outline-offset: -3px; }
+.card-actions { padding: 14px 18px; border-top: 1px solid var(--border); }
+.detail-card { padding: 19px; min-height: 157px; }
+.detail-card h2 { margin: 5px 0 12px; font-size: 1.42rem; }
+.detail-card h3 { margin: 16px 0 6px; }
+.detail-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin: 12px 0; }
+.detail-meta .muted, .small { font-size: .78rem; }
+.course-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.62; }
+.detail-note { background: var(--raised); border-left: 2px solid var(--accent); border-radius: 4px; padding: 8px 11px; font-size: .84rem; }
+.catalogue-footnote { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; color: var(--muted); margin: 14px 0; font-size: .79rem; }
+.catalogue-footnote a { color: var(--accent); }
+.catalogue-footnote a:hover { text-decoration: underline; }
+@media (max-width: 930px) {
+  .filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filter-search { grid-column: span 2; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-card { grid-row: 1; }
+}
+@media (max-width: 420px) {
+  .filter-form > button { grid-column: span 2; }
+}

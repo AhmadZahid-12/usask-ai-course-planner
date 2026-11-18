@@ -10,6 +10,8 @@ import json
 import re
 import time
 from pathlib import Path
+from tempfile import NamedTemporaryFile
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import requests
@@ -33,10 +35,15 @@ def _cache_path(course_code: str) -> Path:
 
 def _read_cache(course_code: str) -> Optional[Dict[str, Any]]:
     p = _cache_path(course_code)
-    if not p.exists():
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return None
+        age = time.time() - float(data.get("saved_at", 0))
+    except (OSError, ValueError, TypeError):
         return None
-    data = json.loads(p.read_text())
-    if time.time() - data.get("saved_at", 0) > CACHE_TTL_SECONDS:
+    ttl = 60 * 5 if data.get("error") else CACHE_TTL_SECONDS
+    if age > ttl:
         return None
     return data
 
@@ -44,7 +51,21 @@ def _read_cache(course_code: str) -> Optional[Dict[str, Any]]:
 def _write_cache(course_code: str, payload: Dict[str, Any]) -> None:
     payload = dict(payload)
     payload["saved_at"] = time.time()
-    _cache_path(course_code).write_text(json.dumps(payload, indent=2))
+    temp_path = None
+    try:
+        with NamedTemporaryFile(dir=CACHE_DIR, encoding="utf-8", mode="w", delete=False) as file:
+            temp_path = Path(file.name)
+            json.dump(payload, file)
+        temp_path.replace(_cache_path(course_code))
+    except OSError:
+        # The catalogue response remains usable when the on-disk cache is unavailable.
+        pass
+    finally:
+        if temp_path is not None:
+            try:
+                temp_path.unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 def course_url(course_code: str) -> str:
@@ -57,14 +78,14 @@ def course_url(course_code: str) -> str:
 
 def extract_description(html: str) -> str:
     """Extract course description from USask catalogue HTML."""
-    soup = BeautifulSoup(html, "html.parser")
+    return _description(BeautifulSoup(html, "html.parser"))
 
-    # Find the Description section by ID
+
+def _description(soup: BeautifulSoup) -> str:
     desc_section = soup.find(id="Description")
     if not desc_section:
         return ""
 
-    # Extract all paragraphs in the Description section
     paragraphs = desc_section.find_all("p")
     if not paragraphs:
         return ""
@@ -112,14 +133,31 @@ def scrape_course_page(course_code: str) -> Dict[str, Any]:
             "error": str(e),
         }
 
-    desc = extract_description(r.text)
+    soup = BeautifulSoup(r.text, "html.parser")
+    desc = _description(soup)
+    heading = soup.select_one("h1")
+    title = soup.select_one("h1 + .lead")
+    units = None
+    if heading and normalize_course_code(heading.get_text(" ", strip=True)) == normalize_course_code(course_code):
+        credit = re.search(r"\.(\d+)$", heading.get_text(" ", strip=True))
+        units = int(credit[1]) if credit else None
+    else:
+        title = None
 
     return {
         "course_code": normalize_course_code(course_code),
         "source_url": url,
         "raw_text": desc[:6000],
+        "title": title.get_text(" ", strip=True) if title else None,
+        "credit_units": units,
+        "retrieved": datetime.now(timezone.utc).date().isoformat(),
         "not_found": not bool(desc),
     }
+
+
+def get_cached_course(course_code: str) -> Optional[Dict[str, Any]]:
+    """Read fresh catalogue cache metadata without contacting USask."""
+    return _read_cache(normalize_course_code(course_code))
 
 
 def get_course_raw_info(course_code: str) -> Dict[str, Any]:

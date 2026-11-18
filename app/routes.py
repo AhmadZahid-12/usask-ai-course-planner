@@ -5,9 +5,10 @@ from pathlib import Path
 from app.gpt_helper import summarize_course
 from app.scraper import get_course_raw_info
 
+from app.catalogue import available_courses, cmpt_catalogue, course_detail, latest_completed, starter_catalogue
 from app.db import db
 from app.models import Plan
-from app.planner import normalize_code
+from app.planner import COURSE_RE, normalize_code
 
 from app.services import (
     bulk_scrape_courses,
@@ -22,10 +23,6 @@ DEFAULT_DEGREE_FILE = DEGREE_DIR / "bsc_cs.json"
 PROGRAM_URL = "https://programs.usask.ca/arts-and-science/computer-science/bsc-4-computer-science.php"
 
 
-def starter_catalogue():
-    return json.loads((DEGREE_DIR / "starter_catalogue.json").read_text(encoding="utf-8"))
-
-
 @bp.route("/", methods=["GET"])
 def home():
     catalogue = starter_catalogue()
@@ -37,7 +34,15 @@ def home():
 
 @bp.get("/courses")
 def explorer():
-    return render_template("index.html", summary=None)
+    return render_template("explorer.html", courses=available_courses(), catalogue=cmpt_catalogue())
+
+
+@bp.get("/api/catalogue/course")
+def api_catalogue_course():
+    code = normalize_code(request.args.get("code"))
+    if not COURSE_RE.fullmatch(code):
+        return jsonify({"error": "Enter a course code like CMPT 141."}), 400
+    return jsonify(course_detail(code, latest_completed()))
 
 
 @bp.get("/assistant")

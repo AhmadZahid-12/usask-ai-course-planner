@@ -1,10 +1,12 @@
 import json
 from typing import Dict, List, Set, Any
-from datetime import datetime
+from datetime import datetime, timezone
+
+from sqlalchemy.dialects.sqlite import insert
 
 from app.db import db
 from app.models import CourseCache
-from app.scraper import get_course_raw_info
+from app.scraper import get_cached_course, get_course_raw_info
 from app.planner import (
     CourseInfo,
     PrerequisiteGroups,
@@ -21,19 +23,15 @@ def _coursecache_get(code: str) -> CourseCache | None:
 
 def _coursecache_upsert(
     code: str, source_url: str, raw_text: str, prereq_groups: PrerequisiteGroups | None
-) -> CourseCache:
-    code = normalize_code(code)
-    row = _coursecache_get(code)
-    if not row:
-        row = CourseCache(code=code)
-
-    row.source_url = source_url or ""
-    row.raw_text = raw_text or ""
-    row.prereqs_json = json.dumps(prereq_groups)
-    row.updated_at = datetime.utcnow()
-
-    db.session.add(row)
-    return row
+) -> None:
+    values = {
+        "source_url": source_url,
+        "raw_text": raw_text,
+        "prereqs_json": json.dumps(prereq_groups),
+        "updated_at": datetime.now(timezone.utc).replace(tzinfo=None),
+    }
+    statement = insert(CourseCache).values(code=normalize_code(code), **values)
+    db.session.execute(statement.on_conflict_do_update(index_elements=["code"], set_=values))
 
 
 def get_or_scrape_course(code: str) -> Dict[str, Any]:
@@ -47,12 +45,16 @@ def get_or_scrape_course(code: str) -> Dict[str, Any]:
 
     cached = _coursecache_get(code)
     if cached and (cached.raw_text or "").strip():
+        metadata = get_cached_course(code) or {}
         # Reparse older cache entries with the current prerequisite rules.
         return {
             "code": cached.code,
             "source_url": cached.source_url,
             "raw_text": cached.raw_text,
             "prereqs": parse_prereqs(cached.raw_text),
+            "title": metadata.get("title"),
+            "credit_units": metadata.get("credit_units"),
+            "retrieved": metadata.get("retrieved"),
             "from_db": True,
             "not_found": False,
         }
@@ -73,6 +75,9 @@ def get_or_scrape_course(code: str) -> Dict[str, Any]:
         "source_url": source_url,
         "raw_text": official_text,
         "prereqs": prereq_groups,
+        "title": raw.get("title"),
+        "credit_units": raw.get("credit_units"),
+        "retrieved": raw.get("retrieved"),
         "from_db": False,
         "not_found": not_found,
     }
