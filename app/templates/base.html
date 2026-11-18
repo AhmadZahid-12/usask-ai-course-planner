@@ -22,6 +22,7 @@
       document.documentElement.dataset.sidebar = localStorage.getItem('planner-sidebar') || 'expanded';
     } catch {}
   </script>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/inter-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <script type="module" src="{{ url_for('static', filename='js/shell.js') }}"></script>
   {% block scripts %}{% endblock %}
@@ -30,7 +31,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="app-shell">
   <aside class="sidebar" id="desktop-sidebar">
-    <a class="brand" href="{{ url_for('main.home') }}" aria-label="USask AI Course Planner">{{ icon('book', 19) }}<span><strong>Course Planner</strong><small>USask · Student workspace</small></span></a>
+    <a class="brand" href="{{ url_for('main.home') }}" aria-label="USask AI Course Planner">{{ icon('book', 19) }}<span><strong>Course Planner</strong><small>USask workspace</small></span></a>
     {{ navigation() }}
     <div class="sidebar-footer"><a class="nav-link" title="Official USask Catalogue" href="https://catalogue.usask.ca/">{{ icon('external', 17) }}<span>USask Catalogue</span></a></div>
   </aside>
